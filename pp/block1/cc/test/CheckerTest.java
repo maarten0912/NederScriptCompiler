@@ -10,7 +10,7 @@ import pp.block1.cc.dfa.State;
 
 /** Test class for Checker implementation. */
 public class CheckerTest {
-	private Checker myChecker = null; // TODO instantiate your Checker implementation
+	private Checker myChecker = new EfficientChecker(); // TODO instantiate your Checker implementation
 
 	private State dfa;
 
