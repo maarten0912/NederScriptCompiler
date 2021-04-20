@@ -7,6 +7,14 @@ public class EfficientChecker implements Checker {
 	 * the given word.
 	 */
 	public boolean accepts(State start, String word) {
-		return false;
+		State state = start;
+		for (char ch : word.toCharArray()) {
+			if (state.hasNext(ch)) {
+				state = state.getNext(ch);
+			} else {
+				return false;
+			}
+		}
+		return state.isAccepting();
 	}
 }
