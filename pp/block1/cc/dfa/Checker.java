@@ -7,6 +7,6 @@ public class EfficientChecker implements Checker {
 	 * the given word.
 	 */
 	public boolean accepts(State start, String word) {
-		return null;
+		return false;
 	}
 }
