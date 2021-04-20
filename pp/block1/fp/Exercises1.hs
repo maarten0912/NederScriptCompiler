@@ -82,6 +82,20 @@ mylength (x:xs) = mylength xs + 1
 prop_mylength :: [a] -> Bool
 prop_mylength xs = mylength xs == length xs
 
+mysum :: [Int] -> Int
+mysum [] = 0
+mysum (x:xs) = x + mysum xs
+
+prop_mysum :: [Int] -> Bool
+prop_mysum xs = mysum xs == sum xs
+
+myreverse :: [a] -> [a]
+myreverse [] = []
+myreverse (x:xs) = myreverse xs : x
+
+-- prop_myreverse :: [a] -> Bool
+-- prop_myreverse xs = myreverse xs == reverse xs
+
 --QuickCheck
 return []
 check = $quickCheckAll
