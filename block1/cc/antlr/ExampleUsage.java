@@ -1,0 +1,26 @@
+package pp.block1.cc.antlr;
+
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.Lexer;
+import org.antlr.v4.runtime.Token;
+
+/** Class showing how to use the Example lexer grammar. */
+public class ExampleUsage {
+	/** Invokes a few trial runs. */
+	public static void main(String[] args) {
+		scan("while do");
+		scan("while while do");
+		scan("whiledo done");
+	}
+
+	/** Runs the Example lexer grammar on a given input text and prints the tokens. */
+	public static void scan(String text) {
+		CharStream stream = CharStreams.fromString(text);
+		Lexer lexer = new Example(stream);
+		for (Token token : lexer.getAllTokens()) {
+			System.out.print(token.toString() + " ");
+		}
+		System.out.println();
+	}
+}
