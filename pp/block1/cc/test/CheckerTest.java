@@ -1,16 +1,15 @@
 package pp.block1.cc.test;
 
-import static pp.block1.cc.dfa.State.ID6_DFA;
-
 import org.junit.Assert;
 import org.junit.Test;
-
-import pp.block1.cc.dfa.Checker;
+import pp.block1.cc.dfa.EfficientChecker;
 import pp.block1.cc.dfa.State;
+
+import static pp.block1.cc.dfa.State.ID6_DFA;
 
 /** Test class for Checker implementation. */
 public class CheckerTest {
-	private Checker myChecker = new EfficientChecker(); // TODO instantiate your Checker implementation
+	private EfficientChecker myChecker = new EfficientChecker(); // TODO instantiate your Checker implementation
 
 	private State dfa;
 
