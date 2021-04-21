@@ -1,18 +1,19 @@
 package pp.block1.cc.test;
 
-import static pp.block1.cc.dfa.State.ID6_DFA;
-
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
-
+import pp.block1.cc.dfa.EfficientScanner;
 import pp.block1.cc.dfa.Scanner;
 import pp.block1.cc.dfa.State;
 
+import java.util.List;
+
+import static pp.block1.cc.dfa.State.ID6_DFA;
+import static pp.block1.cc.dfa.State.LALA_DFA;
+
 /** Test class for Scanner implementation. */
 public class ScannerTest {
-	private Scanner myGen = null; // TODO instantiate your Scanner implementation
+	private Scanner myGen = new EfficientScanner(); // TODO instantiate your Scanner implementation
 
 	@Test
 	public void testID6() {
@@ -20,6 +21,13 @@ public class ScannerTest {
 		yields("");
 		yields("a12345", "a12345");
 		yields("a12345AaBbCc", "a12345", "AaBbCc");
+	}
+
+	@Test
+	public void testLALA() {
+		this.dfa = LALA_DFA;
+		yields("");
+		yields("LaLaLaLiLaLaLaLi", "LaLaLaLi","LaLaLaLi");
 	}
 
 	/** Tests whether a given word can be scanned by {@link myGen}.
