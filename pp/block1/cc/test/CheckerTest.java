@@ -6,6 +6,7 @@ import pp.block1.cc.dfa.EfficientChecker;
 import pp.block1.cc.dfa.State;
 
 import static pp.block1.cc.dfa.State.ID6_DFA;
+import static pp.block1.cc.dfa.State.LALA_DFA;
 
 /** Test class for Checker implementation. */
 public class CheckerTest {
@@ -22,6 +23,20 @@ public class CheckerTest {
 		rejects("a12 456");
 		rejects("a123456");
 		rejects("123456");
+	}
+
+	@Test
+	public void testLALA() {
+		this.dfa = LALA_DFA;
+		accepts("La ");
+		rejects("LLa");
+		rejects("L aaa ");
+		accepts("Laaaaaaaaaaaaaaa");
+		accepts("Laa Laaaa    ");
+		rejects("LALa");
+		accepts("LaLaLaLi");
+		rejects("LaLaaaaLaLii");
+		accepts("Laaaa    Laaa     Laa     Li    ");
 	}
 
 
