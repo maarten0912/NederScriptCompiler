@@ -250,8 +250,8 @@ increaseAgeHighOrd ps n = map (\(p,q,r,s) -> (p,q+n,r,s)) ps
 getWomenRecursive :: [Person] -> [Person]
 getWomenRecursive [] = []
 getWomenRecursive ((a,b,c,d):ps)
-    | b < 30  || b > 40 || c == Male = getWomenRecursive ps
-    | otherwise = (a,b,c,d) : getWomenRecursive ps
+    | b > 30  && b < 40 && c == Female = (a,b,c,d) : getWomenRecursive ps
+    | otherwise = getWomenRecursive ps
 
 getWomenListComp :: [Person] -> [Person]
 getWomenListComp ps = [(a,b,c,d) | (a,b,c,d) <- ps, b >= 30 && b <= 40 && c == Female]
@@ -263,10 +263,10 @@ getAgeByName :: [Person] -> String -> Int
 getAgeByName ps name = head [(b) | (a,b,c,d) <- ps, map toLower a == map toLower name]
 
 sortByAge :: [Person] -> [Person]
-sortByAge ps = map snd [x | x <- sort $ zip (getAgeList ps) ps]
-
-getAgeList :: [Person] -> [Int]
-getAgeList ps = [a | x <- ps, let a = getAge x]
+sortByAge ps = [b | (a,b) <- sort $ zip (getAgeList ps) ps]
+    where
+        getAgeList :: [Person] -> [Int]
+        getAgeList ps = [a | x <- ps, let a = getAge x]
 
 --1-FP.14
 sieve :: [Int]
@@ -282,10 +282,18 @@ testPrime n = collapse sieve
         collapse (x:xs) = x <= n && (x == n || collapse xs)
 
 giveFirstPrimes :: Int -> [Int]
-givePrimes n = take n sieve
+giveFirstPrimes n = take n sieve
 
--- giveSmallerPrimes :: Int -> [Int]
--- giveSmallerPrimes n = []
+giveSmallerPrimes :: Int -> [Int]
+giveSmallerPrimes n = collapse n sieve
+    where 
+        collapse n (x:xs)
+            | n < x = []
+            | otherwise = x : collapse n xs
+
+--1-FP.15
+
+
 
 
 --QuickCheck
