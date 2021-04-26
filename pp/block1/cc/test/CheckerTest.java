@@ -5,8 +5,7 @@ import org.junit.Test;
 import pp.block1.cc.dfa.EfficientChecker;
 import pp.block1.cc.dfa.State;
 
-import static pp.block1.cc.dfa.State.ID6_DFA;
-import static pp.block1.cc.dfa.State.LALA_DFA;
+import static pp.block1.cc.dfa.State.*;
 
 /** Test class for Checker implementation. */
 public class CheckerTest {

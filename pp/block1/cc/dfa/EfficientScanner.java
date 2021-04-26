@@ -1,5 +1,6 @@
 package pp.block1.cc.dfa;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Algorithm interface for generating a list of tokens. */
@@ -11,6 +12,40 @@ public class EfficientScanner implements Scanner {
 	 * token.
 	 */
 	public List<String> scan(State dfa, String text) {
-		return null;
-	};
+		State state = dfa;
+		ArrayList<String> stack = new ArrayList<>();
+		List<String> tokens = new ArrayList<String>();
+
+		while (!text.equals("")) {
+			int i = 0;
+			while (i < text.length()) {
+				char c = text.charAt(i);
+				i++;
+				if (state.hasNext(c)) {
+					state = state.getNext(c);
+				} else {
+					break; // errorstate
+				}
+				if (state.isAccepting()) {
+					stack.add(text.substring(0,i));
+				}
+			}
+
+			if (!stack.isEmpty()) {
+				String token = stack.get(stack.size() - 1);
+				tokens.add(token);
+				state = dfa;
+
+				if (token.length() > text.length()) {
+					return null;
+				}
+
+				text = text.substring(token.length());
+			} else if (!state.isAccepting()) {
+				return null;
+			}
+		}
+
+		return tokens;
+	}
 }

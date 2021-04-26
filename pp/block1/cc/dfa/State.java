@@ -98,9 +98,9 @@ public class State {
 		}
 	}
 
-	static final public State DFA_LALA;
+	static final public State LALA_DFA;
 	static {
-		DFA_LALA = new State(0, false);
+		LALA_DFA = new State(0, false);
 		State lala1 = new State(1, false);
 		State lala2 = new State(2, true);
 		State lala3 = new State(3, true);
@@ -113,7 +113,7 @@ public class State {
 		State lala10 = new State(10, false);
 		State lala11= new State(11, true);
 
-		State[] states = { DFA_LALA, lala1, lala2, lala3, lala4, lala5, lala6, lala7, lala8, lala9, lala10, lala11};
+		State[] states = { LALA_DFA, lala1, lala2, lala3, lala4, lala5, lala6, lala7, lala8, lala9, lala10, lala11};
 		states[0].addNext('L', states[1]);
 		states[1].addNext('a', states[2]);
 		states[2].addNext('a', states[2]);

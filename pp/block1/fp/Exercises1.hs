@@ -224,7 +224,6 @@ henk = ("Henk",69, Male, "Eindhoven")
 petra :: Person
 petra = ("Petra", 35, Female, "Loosdrecht")
 
-
 getName :: Person -> Name
 getName (n,a,s,r) = n
 
@@ -286,15 +285,130 @@ giveFirstPrimes n = take n sieve
 
 giveSmallerPrimes :: Int -> [Int]
 giveSmallerPrimes n = collapse n sieve
-    where 
+    where
+        collapse :: Int -> [Int] -> [Int]
         collapse n (x:xs)
             | n < x = []
             | otherwise = x : collapse n xs
 
+dividers :: Int -> [Int]
+dividers m = [x | x <- [1..m], m `mod` x == 0]
+
+isPrime :: Int -> Bool
+isPrime n = length (dividers n) == 2
+
 --1-FP.15
+pyth :: Int -> [(Int,Int,Int)]
+pyth n = [(a,b,c) | a <- [1..n],b <- [1..n], c <- [1..n], a * a + b * b == c * c]
+
+--1-FP.16
+increasing :: [Int] -> Bool
+increasing [] = True
+increasing [x] = True
+increasing (x:y:xs) = x < y && increasing (y:xs)
+
+weaklyIncreasing :: [Int] -> Bool
+weaklyIncreasing (x:xs) = helper xs [x]
+    where
+        helper :: [Int] -> [Int] -> Bool
+        helper [] _ = True
+        helper (x:xs) prevs = x > sum prevs `div` length prevs && helper xs (prevs ++ [x])
+
+--1-FP.17
+sublist :: [Int] -> [Int] -> Bool
+sublist _ [] = False
+sublist xs (y:ys) = consec xs (y:ys) || sublist xs ys 
+    where
+        consec :: [Int] -> [Int] -> Bool
+        consec [] _ = True
+        consec _ [] = False
+        consec (x:xs) (y:ys) = x == y && consec xs ys
+
+partialSublist :: [Int] -> [Int] -> Bool
+partialSublist [] _ = True
+partialSublist _ [] = False
+partialSublist (x:xs) (y:ys)
+    | x == y = partialSublist xs ys
+    | otherwise = partialSublist (x:xs) ys
+
+--1-FP.18
+bsort :: (Ord a) => [a] -> [a]
+bsort [] = []
+bsort [x] = [x]
+bsort xs = bsort (init sorted) ++ [last sorted]
+    where
+        sorted = bubble xs
+
+bubble :: (Ord a) => [a] -> [a]
+bubble [] = []
+bubble [a] = [a]
+bubble (x:x':xs)
+    | x > x' = x' : bubble (x:xs)
+    | otherwise = x : bubble (x':xs)
+
+prop_bubble :: [Int] -> Bool
+prop_bubble xs = bsort xs == sort xs
+
+mmsort :: (Ord a) => [a] -> [a]
+mmsort [] = []
+mmsort [x] = [x]
+mmsort xs = mn : mmsort (xs \\ [mn,mx]) ++ [mx]
+    where
+        mn = minimum xs
+        mx = maximum xs
+
+prop_minmax :: [Int] -> Bool
+prop_minmax xs = mmsort xs == sort xs
+
+isort :: (Ord a) => [a] -> [a]
+isort xs = foldl ins [] xs
+
+ins :: (Ord a) => [a] -> a -> [a]
+ins [] a = [a]
+ins (x:xs) y
+    | x < y = x : ins xs y
+    | otherwise = (y:x:xs)
+
+prop_isort :: [Int] -> Bool
+prop_isort xs = isort xs == sort xs
+
+msort :: (Ord a) => [a] -> [a]
+msort [] = []
+msort [a] = [a]
+msort xs = merge (msort $ fst $ half xs) (msort $ snd $ half xs)
+    where
+        half :: (Ord a) => [a] -> ([a],[a])
+        half xs = splitAt ((length xs + 1) `div` 2) xs
+
+merge :: (Ord a) => [a] -> [a] -> [a]
+merge [] a = a
+merge a [] = a
+merge (x:xs) (y:ys) 
+    | x < y = x : merge xs (y:ys)
+    | otherwise = y : merge (x:xs) ys
+
+prop_msort :: [Int] -> Bool
+prop_msort xs = msort xs == sort xs
+
+qsort :: (Ord a) => [a] -> [a]
+qsort [] = []
+qsort [a] = [a]
+qsort (x:xs) = qsort (fst $ split (x:xs)) ++ [x] ++ qsort (snd $ split (x:xs))
+    where
+        split :: (Ord a) => [a] -> ([a],[a])
+        split (x:xs) = ([a | a <- xs, a <= x], [b | b <- xs, b > x])
 
 
+prop_qsort :: [Int] -> Bool
+prop_qsort xs = qsort xs == sort xs
 
+--1-FP.19
+myflip :: (a -> b -> c) -> (b -> a -> c)
+myflip f = (\x y -> f y x)
+
+--1-FP.20
+transform :: String -> String
+transform = reverse . filter isLetter . map toUpper
 
 --QuickCheck
 return []

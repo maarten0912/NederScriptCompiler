@@ -1,6 +1,6 @@
 lexer grammar Example;
 
-@header{package pp.block1.cc.antlr;}
+//@header{package pp.block1.cc.antlr;}
 
 WHILE : 'while';             // Keyword
 DO    : 'do';                // Keyword

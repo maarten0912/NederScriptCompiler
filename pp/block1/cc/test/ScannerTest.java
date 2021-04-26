@@ -28,7 +28,10 @@ public class ScannerTest {
 		this.dfa = LALA_DFA;
 		yields("");
 		yields("LaLaLaLiLaLaLaLi", "LaLaLaLi","LaLaLaLi");
+		yields("Laaaa LaLaa", "Laaaa La", "Laa");
+		scanerror("La La La La Li");
 	}
+
 
 	/** Tests whether a given word can be scanned by {@link myGen}.
 	 * and results in the expected tokens.
@@ -46,6 +49,14 @@ public class ScannerTest {
 		Assert.assertEquals(tokens.length, result.size());
 		for (int i = 0; i < tokens.length; i++) {
 			Assert.assertEquals(tokens[i], result.get(i));
+		}
+	}
+
+	private void scanerror(String word) {
+		List<String> result = this.myGen.scan(this.dfa, word);
+		if (result != null) {
+			Assert.fail(String.format(
+					"Word '%s' is accepted by %s", word, this.dfa));
 		}
 	}
 
