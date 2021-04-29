@@ -1,3 +1,4 @@
+
 {-# LANGUAGE TemplateHaskell #-}
 module Exercises1 where
 import Test.QuickCheck
