@@ -15,11 +15,7 @@ import org.junit.Test;
 import pp.block2.cc.NonTerm;
 import pp.block2.cc.Symbol;
 import pp.block2.cc.Term;
-import pp.block2.cc.ll.Grammar;
-import pp.block2.cc.ll.Grammars;
-import pp.block2.cc.ll.LLCalc;
-import pp.block2.cc.ll.Rule;
-import pp.block2.cc.ll.Sentence;
+import pp.block2.cc.ll.*;
 
 public class LLCalcTest {
 	Grammar sentenceG = Grammars.makeSentence();
@@ -81,7 +77,7 @@ public class LLCalcTest {
 
 	/** Creates an LL1-calculator for a given grammar. */
 	private LLCalc createCalc(Grammar g) {
-		return null; // TODO your implementation of LLCalc (Ex. 2-CC.3)
+		return new BasicLLCalc(g); // TODO your implementation of LLCalc (Ex. 2-CC.3)
 	}
 
 	@SuppressWarnings("unchecked")
