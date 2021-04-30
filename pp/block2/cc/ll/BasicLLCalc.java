@@ -77,12 +77,10 @@ public class BasicLLCalc implements LLCalc {
             }
             for (Rule r : g.getRules()) {
                 Set<Term> trailer = follow.get(r.getLHS());
-                System.out.println(trailer);
-                for (int i = r.getRHS().size() - 1; i >= 1; i--) {
+                for (int i = r.getRHS().size(); i >= 1; i--) {
                     List<Symbol> bs = r.getRHS();
-                    Symbol Bi = bs.get(i);
+                    Symbol Bi = bs.get(i - 1);
                     if (Bi instanceof NonTerm) {
-                        System.out.println("yes");
                         follow.get(Bi).addAll(trailer); // update follow using trailer
                         if (getFirst().get(Bi).contains(Symbol.EMPTY)) {
                             Set<Term> addition = getFirst().get(Bi);
@@ -103,11 +101,50 @@ public class BasicLLCalc implements LLCalc {
 
     /** Returns the FIRST+-map for the grammar of this calculator instance. */
     public Map<Rule, Set<Term>> getFirstp() {
-        return null;
+        Map<Rule, Set<Term>> firstp = new HashMap<>();
+        Map<Symbol, Set<Term>> first = getFirst();
+        Map<NonTerm, Set<Term>> follow = getFollow();
+        for (Rule r : g.getRules()) {
+            firstp.put(r, new HashSet<>());
+        }
+        for (Rule r : g.getRules()) {
+            List<Symbol> beta = r.getRHS();
+            firstp.get(r).addAll(first.get(beta.get(0)));
+            firstp.get(r).remove(Symbol.EMPTY);
+            int k = beta.size();
+            int i = 1;
+            while (first.get(beta.get(i - 1)).contains(Symbol.EMPTY) && i <= k - 1) {
+                Set<Term> u = first.get(beta.get(i));
+                u.remove(Symbol.EMPTY);
+                firstp.get(r).addAll(u);
+                i += 1;
+            }
+            if (firstp.get(r).contains(Symbol.EMPTY)) {
+                firstp.get(r).addAll(follow.get(r.getLHS()));
+            }
+        }
+        return firstp;
     };
 
     /** Indicates if the grammar of this calculator instance is LL(1). */
     public boolean isLL1() {
-        return false;
+        Map<Rule, Set<Term>> firstp = getFirstp();
+
+        for (NonTerm s : g.getNonterminals()) {
+            Set<Term> overlap = new HashSet<>();
+            for (Rule r : g.getRules(s)) {
+                Set<Term> newTerms = firstp.get(r);
+                Set<Term> clone = new HashSet<>(overlap);
+                clone.retainAll(newTerms);
+                if (clone.size() != 0) {
+                    //Intersection is nonempty -> there is overlap
+                    return false;
+                }
+                overlap.addAll(newTerms);
+            }
+
+        }
+
+        return true;
     };
 }
