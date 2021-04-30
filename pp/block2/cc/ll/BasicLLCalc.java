@@ -30,7 +30,10 @@ public class BasicLLCalc implements LLCalc {
 
         Map<Symbol, Set<Term>> temp = new HashMap<>();
         while (!first.equals(temp)) {
-            temp = deepCopy(first);
+            temp = new HashMap<>();
+            for (Map.Entry<Symbol, Set<Term>> entry : first.entrySet()) {
+                temp.put(entry.getKey(), new HashSet<>(entry.getValue()));
+            }
             for (Rule r : g.getRules()) {
                 List<Symbol> betas = r.getRHS();
                 int k = r.getRHS().size();
@@ -57,13 +60,6 @@ public class BasicLLCalc implements LLCalc {
         return first;
     };
 
-    public static <T> Map<Symbol, Set<Term>> deepCopy(Map<Symbol, Set<Term>> original) {
-        HashMap<Symbol, Set<Term>> copy = new HashMap<>();
-        for (Map.Entry<Symbol, Set<Term>> entry : original.entrySet()) {
-            copy.put(entry.getKey(), new HashSet<>(entry.getValue()));
-        }
-        return copy;
-    }
 
     /** Returns the FOLLOW-map for the grammar of this calculator instance. */
     public Map<NonTerm, Set<Term>> getFollow() {
@@ -74,8 +70,11 @@ public class BasicLLCalc implements LLCalc {
         follow.get(g.getStart()).add(Symbol.EOF);
         //Initialised
         Map<NonTerm, Set<Term>> temp = new HashMap<>();
-        while (temp != follow) {
-            temp = follow;
+        while (!follow.equals(temp)) {
+            temp = new HashMap<>();
+            for (Map.Entry<NonTerm, Set<Term>> entry : follow.entrySet()) {
+                temp.put(entry.getKey(), new HashSet<>(entry.getValue()));
+            }
             for (Rule r : g.getRules()) {
                 Set<Term> trailer = follow.get(r.getLHS());
                 System.out.println(trailer);
