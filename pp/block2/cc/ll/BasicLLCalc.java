@@ -28,15 +28,12 @@ public class BasicLLCalc implements LLCalc {
             first.put(e, new HashSet<>(Collections.singletonList(e)));
         }
 
-
         Map<Symbol, Set<Term>> temp = new HashMap<>();
-        while (first != temp) {
-            temp = first;
+        while (!first.equals(temp)) {
+            temp = deepCopy(first);
             for (Rule r : g.getRules()) {
                 List<Symbol> betas = r.getRHS();
                 int k = r.getRHS().size();
-
-                System.out.println(r);
 
                 Set<Term> rhs = first.get(betas.get(0));
                 rhs.remove(Symbol.EMPTY);
@@ -56,13 +53,17 @@ public class BasicLLCalc implements LLCalc {
                 first.get(r.getLHS()).addAll(rhs);
             }
         }
-        System.out.println("====> FIRST <====");
-        for (Map.Entry<Symbol, Set<Term>> e : first.entrySet()) {
-            System.out.println(e.getKey() + " " + e.getValue());
-        }
-        System.out.println("====> FIRST <====");
+
         return first;
     };
+
+    public static <T> Map<Symbol, Set<Term>> deepCopy(Map<Symbol, Set<Term>> original) {
+        HashMap<Symbol, Set<Term>> copy = new HashMap<>();
+        for (Map.Entry<Symbol, Set<Term>> entry : original.entrySet()) {
+            copy.put(entry.getKey(), new HashSet<>(entry.getValue()));
+        }
+        return copy;
+    }
 
     /** Returns the FOLLOW-map for the grammar of this calculator instance. */
     public Map<NonTerm, Set<Term>> getFollow() {
