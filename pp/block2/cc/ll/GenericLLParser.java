@@ -1,9 +1,6 @@
 package pp.block2.cc.ll;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
@@ -31,7 +28,7 @@ public class GenericLLParser implements Parser {
 
 	public GenericLLParser(Grammar g) {
 		this.g = g;
-		this.calc = null; // TODO Instantiate your LLCalc-implementation
+		this.calc = new BasicLLCalc(g);
 	}
 
 	@Override
@@ -130,6 +127,14 @@ public class GenericLLParser implements Parser {
 
 	/** Constructs the {@link #ll1Table}. */
 	private Map<NonTerm, Map<Term, Rule>> calcLL1Table() {
+		Map<Symbol, Set<Term>> first = calc.getFirst();
+		Map<NonTerm, Set<Term>> follow = calc.getFollow();
+		Map<Rule, Set<Term>> firstp = calc.getFirstp();
+		Map<NonTerm, Map<Term, Rule>> table = new HashMap<>();
+
+
+
+
 		return null; // TODO fill in
 	}
 }

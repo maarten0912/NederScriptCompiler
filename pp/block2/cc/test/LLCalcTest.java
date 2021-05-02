@@ -40,8 +40,8 @@ public class LLCalcTest {
 	Term end = sentenceG.getTerminal(Sentence.ENDMARK);
 	Term ifT = ifG. getTerminal(If.IF);
 	Term elseT = ifG.getTerminal(If.ELSE);
-	Term assignT = ifG.getTerminal(If.ASSIGN);
-	Term exprT = ifG.getTerminal(If.COND);
+	Term assign = ifG.getTerminal(If.ASSIGN);
+	Term expr = ifG.getTerminal(If.COND);
 	Term a = lrqG.getTerminal(LRQ.A);
 	Term b = lrqG.getTerminal(LRQ.B);
 	Term c = lrqG.getTerminal(LRQ.C);
@@ -75,7 +75,7 @@ public class LLCalcTest {
 	@Test
 	public void testIfFirst () {
 		Map <Symbol, Set<Term>> first = ifLL.getFirst();
-		assertEquals(set(assignT, ifT), first.get(stat));
+		assertEquals(set(assign, ifT), first.get(stat));
 		assertEquals(set(elseT, empty), first.get(elsePart));
 	}
 
