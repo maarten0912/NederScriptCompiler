@@ -27,6 +27,8 @@ public class BasicLLCalc implements LLCalc {
         for (Term e : g.getTerminals()) {
             first.put(e, new HashSet<>(Collections.singletonList(e)));
         }
+        first.put(Symbol.EMPTY, new HashSet<>(Collections.singletonList(Symbol.EMPTY)));
+        first.put(Symbol.EOF, new HashSet<>(Collections.singletonList(Symbol.EOF)));
 
         Map<Symbol, Set<Term>> temp = new HashMap<>();
         while (!first.equals(temp)) {
@@ -36,27 +38,37 @@ public class BasicLLCalc implements LLCalc {
             }
             for (Rule r : g.getRules()) {
                 List<Symbol> betas = r.getRHS();
-                int k = r.getRHS().size();
+                int k = betas.size();
+                int i;
+                Set<Term> rhs;
+                if (!betas.contains(Symbol.EMPTY) && !betas.contains(Symbol.EOF)) {
 
-                Set<Term> rhs = first.get(betas.get(0));
-                rhs.remove(Symbol.EMPTY);
+//                List<Symbol> betas = new ArrayList<>(temprhs);
+//                betas.remove(Symbol.EMPTY);
+//                betas.remove(Symbol.EOF);
+//                if (k == 0) {
+//                    break;
+//                }
+                    i = 1;
 
-                int i = 1;
-                while (first.get(betas.get(i - 1)).contains(Symbol.EMPTY) && i <= k - 1) {
-                    Set<Term> u = first.get(betas.get(i));
-                    u.remove(Symbol.EMPTY);
-                    rhs.addAll(u);
-                    i += 1;
+                    rhs = first.get(betas.get(0));
+                    rhs.remove(Symbol.EMPTY);
+                    while (first.get(betas.get(i - 1)).contains(Symbol.EMPTY) && i <= k - 1) {
+                        Set<Term> u = first.get(betas.get(i));
+                        u.remove(Symbol.EMPTY);
+                        rhs.addAll(u);
+                        i += 1;
+                    }
+                } else {
+                    i = 1;
+                    rhs = new HashSet<>();
                 }
-
                 if (i == k && first.get(betas.get(k - 1)).contains(Symbol.EMPTY)) {
                     rhs.add(Symbol.EMPTY);
                 }
-
                 first.get(r.getLHS()).addAll(rhs);
             }
         }
-
         return first;
     };
 
