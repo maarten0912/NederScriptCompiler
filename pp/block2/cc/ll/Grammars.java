@@ -4,6 +4,7 @@
 package pp.block2.cc.ll;
 
 import pp.block2.cc.NonTerm;
+import pp.block2.cc.Symbol;
 import pp.block2.cc.SymbolFactory;
 import pp.block2.cc.Term;
 
@@ -53,6 +54,7 @@ public class Grammars {
 		g.addRule(Stat, assign);
 		g.addRule(Stat, if_, cond, then, Stat, ElsePart);
 		g.addRule(ElsePart, else_, Stat);
+		g.addRule(ElsePart, Symbol.EMPTY);
 
 		return g;
 	}
@@ -60,6 +62,9 @@ public class Grammars {
 		NonTerm L = new NonTerm("L");
 		NonTerm R = new NonTerm("R");
 		NonTerm Q = new NonTerm("Q");
+		NonTerm Rprime = new NonTerm("R'");
+		NonTerm Qprime = new NonTerm("Q'");
+
 
 		SymbolFactory fact  = new SymbolFactory(LRQ.class);
 		Term a = fact.getTerminal(LRQ.A);
@@ -69,11 +74,13 @@ public class Grammars {
 		Grammar g = new Grammar(L);
 		g.addRule(L, R, a);
 		g.addRule(L, Q, b, a);
-		g.addRule(R, a, b, a);
-		g.addRule(R, c, a, b, a);
-		g.addRule(R, R, b, c);
-		g.addRule(Q, b, b, c);
-		g.addRule(Q, b, c);
+		g.addRule(R, a, b, a, Rprime);
+		g.addRule(R, c, a, b, a, Rprime);
+		g.addRule(Rprime, b, c, Rprime);
+		g.addRule(Rprime, Symbol.EMPTY);
+		g.addRule(Q, b, Qprime);
+		g.addRule(Qprime, b, c);
+		g.addRule(Qprime, c);
 
 		return g;
 	}

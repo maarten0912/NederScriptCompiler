@@ -6,14 +6,21 @@ l : r A
   | q B A
   ;
 
-r : A B A
-  | C A B A
-  | r B C
+r : A B A rprime
+  | C A B A rprime
   ;
 
-q : B B C
-  | B C
+rprime : B C rprime
+  |
   ;
+
+q : B qprime
+  ;
+
+qprime : B C
+  | C
+  ;
+
 
 A : 'a';
 B : 'b';
