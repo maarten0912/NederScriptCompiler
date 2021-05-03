@@ -131,8 +131,11 @@ public class LLCalcTest {
 		// Test per rule
 		Map<Rule, Set<Term>> firstp = ifLL.getFirstp();
 		List<Rule> elseRules = ifG.getRules(elsePart);
+		List<Rule> statRules = ifG.getRules(stat);
 		assertEquals(set(elseT), firstp.get(elseRules.get(0)));
-		assertEquals(set(eof, elseT), firstp.get(elseRules.get(1)));
+		assertEquals(set(elseT, eof), firstp.get(elseRules.get(1)));
+		assertEquals(set(assign), firstp.get(statRules.get(0)));
+		assertEquals(set(ifT), firstp.get(statRules.get(1)));
 	}
 
 	@Test
@@ -147,7 +150,7 @@ public class LLCalcTest {
 
 	@Test
 	public void testIfLL1() {
-		assertTrue(ifLL.isLL1());
+		assertFalse(ifLL.isLL1());
 	}
 	
 	/** Creates an LL1-calculator for a given grammar. */

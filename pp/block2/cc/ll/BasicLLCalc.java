@@ -30,45 +30,33 @@ public class BasicLLCalc implements LLCalc {
         first.put(Symbol.EMPTY, new HashSet<>(Collections.singletonList(Symbol.EMPTY)));
         first.put(Symbol.EOF, new HashSet<>(Collections.singletonList(Symbol.EOF)));
 
-        Map<Symbol, Set<Term>> temp = new HashMap<>();
-        while (!first.equals(temp)) {
-            temp = new HashMap<>();
-            for (Map.Entry<Symbol, Set<Term>> entry : first.entrySet()) {
-                temp.put(entry.getKey(), new HashSet<>(entry.getValue()));
-            }
+        boolean changing;
+        do {
+            changing = false;
             for (Rule r : g.getRules()) {
                 List<Symbol> betas = r.getRHS();
                 int k = betas.size();
-                int i;
-                Set<Term> rhs;
-                if (!betas.contains(Symbol.EMPTY) && !betas.contains(Symbol.EOF)) {
 
-//                List<Symbol> betas = new ArrayList<>(temprhs);
-//                betas.remove(Symbol.EMPTY);
-//                betas.remove(Symbol.EOF);
-//                if (k == 0) {
-//                    break;
-//                }
-                    i = 1;
+                Set<Term> rhs = new HashSet<>(first.get(betas.get(0)));
+                rhs.remove(Symbol.EMPTY);
 
-                    rhs = first.get(betas.get(0));
-                    rhs.remove(Symbol.EMPTY);
-                    while (first.get(betas.get(i - 1)).contains(Symbol.EMPTY) && i <= k - 1) {
-                        Set<Term> u = first.get(betas.get(i));
-                        u.remove(Symbol.EMPTY);
-                        rhs.addAll(u);
-                        i += 1;
-                    }
-                } else {
-                    i = 1;
-                    rhs = new HashSet<>();
+                int i = 1;
+                while (first.get(betas.get(i - 1)).contains(Symbol.EMPTY) && i <= k - 1) {
+                    Set<Term> u = new HashSet<>(first.get(betas.get(i)));
+                    u.remove(Symbol.EMPTY);
+                    rhs.addAll(u);
+                    i += 1;
                 }
+
                 if (i == k && first.get(betas.get(k - 1)).contains(Symbol.EMPTY)) {
                     rhs.add(Symbol.EMPTY);
                 }
-                first.get(r.getLHS()).addAll(rhs);
+
+                if (first.get(r.getLHS()).addAll(rhs)) {
+                    changing = true;
+                }
             }
-        }
+        } while (changing);
         return first;
     };
 
@@ -81,32 +69,33 @@ public class BasicLLCalc implements LLCalc {
         }
         follow.get(g.getStart()).add(Symbol.EOF);
         //Initialised
-        Map<NonTerm, Set<Term>> temp = new HashMap<>();
-        while (!follow.equals(temp)) {
-            temp = new HashMap<>();
-            for (Map.Entry<NonTerm, Set<Term>> entry : follow.entrySet()) {
-                temp.put(entry.getKey(), new HashSet<>(entry.getValue()));
-            }
+        boolean changing;
+        do {
+            changing = false;
             for (Rule r : g.getRules()) {
-                Set<Term> trailer = follow.get(r.getLHS());
+                Set<Term> trailer = new HashSet<>(follow.get(r.getLHS()));
                 for (int i = r.getRHS().size(); i >= 1; i--) {
                     List<Symbol> bs = r.getRHS();
                     Symbol Bi = bs.get(i - 1);
                     if (Bi instanceof NonTerm) {
-                        follow.get(Bi).addAll(trailer); // update follow using trailer
+
+                        if (follow.get(Bi).addAll(trailer)) { // update follow using trailer
+                            changing = true;
+                        }
+
                         if (getFirst().get(Bi).contains(Symbol.EMPTY)) {
-                            Set<Term> addition = getFirst().get(Bi);
+                            Set<Term> addition = new HashSet<>(getFirst().get(Bi));
                             addition.remove(Symbol.EMPTY);
                             trailer.addAll(addition);
                         } else {
-                            trailer = getFirst().get(Bi);
+                            trailer = new HashSet<>(getFirst().get(Bi));
                         }
                     } else {
-                        trailer = getFirst().get(Bi);
+                        trailer = new HashSet<>(getFirst().get(Bi));
                     }
                 }
             }
-        }
+        } while (changing);
 
         return follow;
     };
@@ -120,20 +109,14 @@ public class BasicLLCalc implements LLCalc {
             firstp.put(r, new HashSet<>());
         }
         for (Rule r : g.getRules()) {
-            List<Symbol> beta = r.getRHS();
-            firstp.get(r).addAll(first.get(beta.get(0)));
-            firstp.get(r).remove(Symbol.EMPTY);
-            int k = beta.size();
-            int i = 1;
-            while (first.get(beta.get(i - 1)).contains(Symbol.EMPTY) && i <= k - 1) {
-                Set<Term> u = first.get(beta.get(i));
-                u.remove(Symbol.EMPTY);
-                firstp.get(r).addAll(u);
-                i += 1;
-            }
-            if (firstp.get(r).contains(Symbol.EMPTY)) {
+            List<Symbol> betas = r.getRHS();
+            Set<Term> a = new HashSet<>(first.get(betas.get(0)));
+
+            firstp.get(r).addAll(a);
+            if (a.contains(Symbol.EMPTY)) {
                 firstp.get(r).addAll(follow.get(r.getLHS()));
             }
+            firstp.get(r).remove(Symbol.EMPTY);
         }
         return firstp;
     };
