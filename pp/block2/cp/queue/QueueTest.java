@@ -21,7 +21,7 @@ public class QueueTest {
     /**
      * The amount of threads used in each test.
      */
-    private static final int AMOUNT_OF_THREADS = 10;
+    private static final int AMOUNT_OF_THREADS = 2;
 
     /**
      * Simple random object to get random integers from.
@@ -40,7 +40,7 @@ public class QueueTest {
     @Before
     public void before() {
         //Setup an empty queue.
-        this.producerConsumerQueue = new ConcurrentQueue<>();
+        this.producerConsumerQueue = new CoarseGrainedLinkedListQueue<>();
     }
 
     /**
@@ -73,10 +73,8 @@ public class QueueTest {
     private void consumer(int num) throws InterruptedException {
         int i = 100;
         while (i > 0) {
-            Integer read;
             try {
-                read = this.producerConsumerQueue.pull();
-                System.out.printf("Consumer %d: Pulled %d.%n", num, read);
+                this.producerConsumerQueue.pull();
                 i--;
             } catch (QueueEmptyException e) {
                 Thread.sleep(500);
@@ -91,7 +89,6 @@ public class QueueTest {
     private void producer(int num) {
         for (int i = 0; i < 100; i++) {
             int write = this.random.nextInt();
-            System.out.printf("Producer %d: Pushed %d.%n", num, write);
             this.producerConsumerQueue.push(write);
         }
     }
