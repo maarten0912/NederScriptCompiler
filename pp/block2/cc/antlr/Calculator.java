@@ -24,7 +24,7 @@ public class Calculator {
         }
     }
 
-    private static class MyArithmeticListener extends ArithmeticBaseListener {
+    public static class MyArithmeticListener extends ArithmeticBaseListener {
         private Stack<BigInteger> stack = new Stack<>();
 
         public BigInteger getResult() {

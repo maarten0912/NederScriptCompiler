@@ -12,7 +12,7 @@ import static pp.block2.cc.ll.LRQ.*;
 
 public class LRQParser implements Parser {
     public LRQParser() {
-    this.fact = new SymbolFactory(LRQ.class);
+        this.fact = new SymbolFactory(LRQ.class);
     }
 
     private final SymbolFactory fact;
@@ -126,7 +126,9 @@ public class LRQParser implements Parser {
         }
     }
 
-    /** Creates an AST based on the expected token type. */
+    /**
+     * Creates an AST based on the expected token type.
+     */
     private AST parseToken(int tokenType) throws ParseException {
         Token next = next();
         if (next.getType() != tokenType) {
@@ -138,7 +140,9 @@ public class LRQParser implements Parser {
         return new AST(this.fact.getTerminal(tokenType), next);
     }
 
-    /** Returns the next token, without moving the token index. */
+    /**
+     * Returns the next token, without moving the token index.
+     */
     private Token peek() throws ParseException {
         if (this.index >= this.tokens.size()) {
             throw new ParseException("Reading beyond end of input");
@@ -146,7 +150,9 @@ public class LRQParser implements Parser {
         return this.tokens.get(this.index);
     }
 
-    /** Returns the next token and moves up the token index. */
+    /**
+     * Returns the next token and moves up the token index.
+     */
     private Token next() throws ParseException {
         Token result = peek();
         this.index++;

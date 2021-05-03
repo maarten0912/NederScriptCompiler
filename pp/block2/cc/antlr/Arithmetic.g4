@@ -3,9 +3,9 @@ grammar Arithmetic;
 //@header{package pp.block2.cc.antlr;}
 
 expression
-  : expression MULT expression
+  : <assoc=right> expression POW expression
+  | expression MULT expression
   | expression (PLUS | MINUS) expression
-  | <assoc=right> expression POW expression
   | LEFTB expression RIGHTB
   | MINUS NUMBER
   | NUMBER
