@@ -4,8 +4,8 @@ grammar Arithmetic;
 
 expression
   : expression MULT expression
-  | expression (PLUS | MINUS) expression
   | <assoc=right> expression POW expression
+  | expression (PLUS | MINUS) expression
   | LEFTB expression RIGHTB
   | MINUS NUMBER
   | NUMBER
