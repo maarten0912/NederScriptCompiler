@@ -1,3 +1,13 @@
+{-# LANGUAGE TemplateHaskell #-}
+module Exercises2part4 where
+import FPPrac.Trees
+import Test.QuickCheck
+import Test.QuickCheck.All
+import Test.QuickCheck.Function
+import Data.List
+import Data.Maybe
+import Data.Char
+
 --2-FP.11
 
 data BinTree a b = LeafBin
