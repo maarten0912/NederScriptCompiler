@@ -1,6 +1,6 @@
 lexer grammar CalcVocab;
 
-@header{package pp.block3.cc.antlr;}
+//@header{package pp.block3.cc.antlr;}
 
 TIMES  : '*';
 PLUS   : '+';

@@ -1,6 +1,6 @@
 grammar DeclUse;
 
-@header{package pp.block3.cc.symbol;}
+//@header{package pp.block3.cc.symbol;}
 
 program : '(' series ')' ;
 series  : unit* ;

@@ -11,12 +11,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.junit.Test;
 
-import pp.block3.cc.antlr.CalcAttrLexer;
-import pp.block3.cc.antlr.CalcAttrParser;
-import pp.block3.cc.antlr.CalcAttrParser.ExprContext;
-import pp.block3.cc.antlr.CalcLexer;
-import pp.block3.cc.antlr.CalcParser;
-import pp.block3.cc.antlr.Calculator;
+import pp.block3.cc.antlr.*;
 
 public class CalcTest {
 	private final ParseTreeWalker walker = new ParseTreeWalker();
@@ -45,7 +40,7 @@ public class CalcTest {
 		return parser.expr();
 	}
 
-	private ExprContext parseCalcAttr(String text) {
+	private CalcAttrParser.ExprContext parseCalcAttr(String text) {
 		CharStream chars = CharStreams.fromString(text);
 		Lexer lexer = new CalcAttrLexer(chars);
 		TokenStream tokens = new CommonTokenStream(lexer);
