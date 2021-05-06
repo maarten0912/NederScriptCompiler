@@ -252,6 +252,10 @@ allNames ps = map (\p -> name p) ps
 getInt :: IO Integer
 getInt = fmap read getLine
 
+--2-FP.11
+
+
+
 --QuickCheck
 return []
 check = $quickCheckAll

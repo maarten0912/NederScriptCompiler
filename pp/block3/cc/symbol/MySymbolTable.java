@@ -1,9 +1,9 @@
 package pp.block3.cc.symbol;
 
 public class MySymbolTable implements SymbolTable {
-
     @Override
     public void openScope() {
+
     }
 
     @Override

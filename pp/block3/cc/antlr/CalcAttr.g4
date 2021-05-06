@@ -18,7 +18,7 @@ expr returns [ int val ]
      | { System.out.println("Evaluating NUMBER"); }
        NUMBER
        { $val = getValue($NUMBER.text); }
-     | { System.out.println("Evaluating negative NUMBER"); }
+     | { System.out.println("Evaluating NEGATIVE NUMBER"); }
        MINUS NUMBER
        { $val = -1 * getValue($NUMBER.text); }
      ;
