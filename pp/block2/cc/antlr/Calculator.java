@@ -3,6 +3,7 @@ package pp.block2.cc.antlr;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.pattern.ParseTreePattern;
 
 import java.math.BigInteger;
 import java.util.Scanner;
