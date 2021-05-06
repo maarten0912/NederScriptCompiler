@@ -23,12 +23,12 @@ public class CalcTest {
 		test(7, "1+2*3");
 		test(9, "(1+2)*3");
 		test(2, "5+-3");
-		test(15, "5*-3");
+		test(-15, "5*-3");
 		test(14, "5+(-3*-3)");
 	}
 
 	private void test(int expected, String expr) {
-//		assertEquals(expected, parseCalcAttr(expr).val);
+		assertEquals(expected, parseCalcAttr(expr).val);
 		ParseTree tree = parseCalc(expr);
 		this.calc.init();
 		this.walker.walk(this.calc, tree);
