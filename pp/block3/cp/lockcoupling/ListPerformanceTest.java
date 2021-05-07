@@ -43,7 +43,7 @@ public class ListPerformanceTest {
 		 class's constructor to compare it with the SynchronizedList
 		*/
 
-		this.lockCoupledList = new SynchronizedList<>();
+		this.lockCoupledList = new FineGrainedList<>();
 		
 		for (int i = 1; i <= AMOUNT_OF_ELEMENTS / 5; i++){
 			this.synchronizedList.add("aap");
