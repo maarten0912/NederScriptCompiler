@@ -44,7 +44,7 @@ public class ListPerformanceTest {
 		*/
 
 		this.lockCoupledList = new FineGrainedList<>();
-		
+
 		for (int i = 1; i <= AMOUNT_OF_ELEMENTS / 5; i++){
 			this.synchronizedList.add("aap");
 			this.synchronizedList.add("noot");
