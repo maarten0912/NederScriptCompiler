@@ -11,26 +11,26 @@ import SimpleArithmeticVocab;
 t returns [ Type type ]
      : t0=t HAT t1=t
        {
-         if ($t1.type == NUM && $t0.type != Type.BOOL) {
-           $type = $t0.type
+         if ($t1.type == Type.NUM && $t0.type != Type.BOOL) {
+           $type = $t0.type;
          } else {
-           $type = Type.ERR
+           $type = Type.ERR;
          }
        }
      | t0=t PLUS t1=t
        {
          if ($t0.type == $t1.type) {
-           $type = $t0.type
+           $type = $t0.type;
          } else {
-           $type = Type.ERR
+           $type = Type.ERR;
          }
        }
      | t0=t EQUALS t1=t
        {
          if ($t0.type == $t1.type) {
-           $type = Type.BOOL
+           $type = Type.BOOL;
          } else {
-           $type = Type.ERR
+           $type = Type.ERR;
          }
        }
      | LPAR t0=t RPAR
