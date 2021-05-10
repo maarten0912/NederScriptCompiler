@@ -19,44 +19,52 @@ public class ArithmeticListener extends SimpleArithmeticBaseListener {
 
     @Override
     public void exitNumber(SimpleArithmeticParser.NumberContext ctx) {
-        super.exitNumber(ctx);
+        set(ctx, Type.NUM);
     }
 
     @Override
     public void exitBool(SimpleArithmeticParser.BoolContext ctx) {
-        super.exitBool(ctx);
+        set(ctx, Type.BOOL);
     }
 
     @Override
     public void exitString(SimpleArithmeticParser.StringContext ctx) {
-        super.exitString(ctx);
+        set(ctx, Type.STR);
     }
 
 
     @Override
     public void exitEquals(SimpleArithmeticParser.EqualsContext ctx) {
-        super.exitEquals(ctx);
+        if (type(ctx.t(0)) == type(ctx.t(1))) {
+            set( ctx, Type.BOOL);
+        } else {
+            set (ctx, Type.ERR);
+        }
     }
 
 
     @Override
     public void exitBracket(SimpleArithmeticParser.BracketContext ctx) {
-        super.exitBracket(ctx);
+        set(ctx, type(ctx.t()));
     }
 
 
     @Override
     public void exitHat(SimpleArithmeticParser.HatContext ctx) {
-//        set( ctx, Math.pow(val(ctx.t(0)), val(ctx.t(1))));
+        if (type(ctx.t(1)) == Type.NUM && type(ctx.t(0)) != Type.BOOL) {
+            set( ctx, type(ctx.t(0)));
+        } else {
+            set (ctx, Type.ERR);
+        }
     }
 
 
     @Override
     public void exitPlus(SimpleArithmeticParser.PlusContext ctx) {
-        if (type(ctx.t(0)) == type(ctx.t(1)) {
-            set( ctx, val(ctx.t(0)) + val(ctx.t(1)));
+        if (type(ctx.t(0)) == type(ctx.t(1))) {
+            set( ctx, type(ctx.t(0)));
         } else {
-
+            set (ctx, Type.ERR);
         }
     }
 
