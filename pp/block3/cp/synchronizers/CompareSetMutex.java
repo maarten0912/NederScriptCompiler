@@ -1,52 +1,40 @@
 package pp.block3.cp.synchronizers;
 
-import javax.swing.table.JTableHeader;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * BasicLock interface which can lock with 2 threads based on thread number.
- */
-public class CompareSetMutex implements BasicLock {
+public class CompareSetMutex implements BasicLock{
 
-	AtomicInteger owner;
-	AtomicInteger level;
+    AtomicInteger holdCount;
+    AtomicInteger ownerThread;
 
-	public CompareSetMutex() {
-		owner = new AtomicInteger();
-		level = new AtomicInteger();
-		owner.set(-1);
-		level.set(0);
-	}
+    public CompareSetMutex() {
+        holdCount = new AtomicInteger();
+        holdCount.set(0);
+        ownerThread = new AtomicInteger();
+        ownerThread.set(-1);
+    }
 
-	/**
-	 * Acquires the lock.
-	 * @param threadNumber is the number of the requesting thread, 
-	 * threadNumber == 0|1
-	 */
-	public void lock(int threadNumber) {
-		if (owner.get() == threadNumber) {
-			level.incrementAndGet();
-		} else {
-			while (!owner.compareAndSet(-1,threadNumber)) {
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			};
-			level.incrementAndGet();
-			owner.set(threadNumber);
-		}
-	};
+    @Override
+    public void lock(int threadNumber) {
+        if (ownerThread.get() == threadNumber) {
+            holdCount.incrementAndGet();
+        } else {
+            while (!ownerThread.compareAndSet(-1,threadNumber)) {
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            holdCount.incrementAndGet();
+            ownerThread.set(threadNumber);
+        }
+    }
 
-	/**
-	 * Releases the lock.
-	 * @param threadNumber is the number of the releasing thread, 
-	 * threadNumber == 0|1
-	 */
-	public void unlock(int threadNumber) {
-		if (owner.get() == threadNumber && level.decrementAndGet() == 0) {
-			owner.set(-1);
-		}
-	};
+    @Override
+    public void unlock(int threadNumber) {
+        if (ownerThread.get() == threadNumber && holdCount.decrementAndGet() == 0) {
+            ownerThread.set(-1);
+        }
+    }
 }
