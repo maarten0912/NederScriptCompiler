@@ -52,8 +52,7 @@ reserved = Token.reserved lexer
 --             | identifier
 --             | '(' <expr> ')'
 
-parseFactor :: Parser Expr
-parseFactor =  (Const <$> integer) <|> (Var <$> identifier) <|> (parens parseExpr)
+
 
 parseTerm :: Parser Expr
 parseTerm = parseFactor `chainl1` mult
@@ -91,9 +90,9 @@ data Expr = Const Integer
           | Var String
           | Mult Expr Expr
           | Add Expr Expr
-          | Func FunDef Expr
           | If Cond Expr Expr
           | Dec Expr
+          | Call String Expr
           deriving Show
 
 data Cond = Cond Expr Expr
@@ -106,26 +105,21 @@ data FunDef = FunDef String String Expr
 -- <expr>      ::== <dec> | <term> ('+' <term>)* | <if>
 -- <term>      ::== <factor> ('*' <factor>)*
 -- <factor>    ::== num
+--                | identifier '(' <expr> ')'
 --                | identifier
 --                | '(' <expr> ')'
---                | identifier '(' <expr> ')'
 -- <condition> ::== <expr> '==' <expr>
 -- <if>        ::== 'if' <condition> 'then' <expr> 'else' <expr>
 -- <dec>       ::== 'dec' <expr> 
 
+parseFactor :: Parser Expr
+parseFactor =  (Const <$> integer) <|> try (Call <$> identifier <*> (parens parseExpr)) <|> (Var <$> identifier) <|> (parens parseExpr) 
 
-parseFunc :: Parser Expr
-parseFunc = Func <$> (symbol "function" *> identifier) <*> identifier <*> (symbol "=" *> parseExpr)
+parseFunc :: Parser FunDef
+parseFunc = FunDef <$> (symbol "function" *> identifier) <*> identifier  <*> (symbol "=" *> parseExpr)
 
--- parserFun :: String -> FunDef
--- parserFun = parser parseFunc
+parserFun :: String -> FunDef
+parserFun = parser parseFunc
 
--- fib :: FunDef
--- fib = parserFun
--- " function fib x = if x == 0 then 1 else ( if x == 1 then 1 else fib ( dec x )+ fib ( dec dec x )) "
-
-
--- fib :: Integer -> Integer
--- fib = (evalfun . parserFun) 
---  "function fib x = if x == 0 then 1 else (if x == 1 then 1 else fib(dec x)+fib(dec dec x))"
-
+fib :: FunDef
+fib = parserFun "function fib x = if x == 0 then 1 else ( if x == 1 then 1 else fib ( dec x )+ fib ( dec dec x )) "
