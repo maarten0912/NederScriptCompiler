@@ -41,11 +41,7 @@ public class BasicLockTest {
     private final Set<Integer> numbers =
 	Collections.synchronizedSet(new HashSet<>());
 
-    /*
-    TODO replace null by a constructor call to your
-    BasicLock implementation
-    */
-    private final BasicLock lock = null;
+    private final BasicLock lock = new CompareSetMutex();
 
     @Before
     public void before() {
