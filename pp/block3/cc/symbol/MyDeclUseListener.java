@@ -22,7 +22,7 @@ public class MyDeclUseListener extends DeclUseBaseListener {
             for (String s : errorstack) {
                 System.err.println(s);
             }
-            System.exit(2);
+//            System.exit(2);
         }
     }
 
@@ -49,16 +49,9 @@ public class MyDeclUseListener extends DeclUseBaseListener {
     }
 
     @Override
-    public void enterUse(DeclUseParser.UseContext ctx) {
-        System.out.println("Enter: " + ctx.ID());
-
-    }
-
-    @Override
     public void exitUse(DeclUseParser.UseContext ctx) {
-        System.out.println("Exit: " + ctx.ID());
         if (!st.contains(ctx.ID().toString())) {
-            String errmsg = "Identifier has not been declared before, at" + ctx.ID().getSymbol().getLine() + ":" + ctx.ID().getSymbol().getCharPositionInLine();
+            String errmsg = "Identifier has not been declared before, at " + ctx.ID().getSymbol().getLine() + ":" + ctx.ID().getSymbol().getCharPositionInLine();
             errorstack.add(errmsg);
         }
     }
