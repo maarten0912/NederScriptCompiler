@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
 import pp.block4.cc.ErrorListener;
-import pp.block4.cc.iloc.CalcParser.CompleteContext;
 import pp.iloc.Simulator;
 import pp.iloc.model.Op;
 import pp.iloc.model.OpCode;

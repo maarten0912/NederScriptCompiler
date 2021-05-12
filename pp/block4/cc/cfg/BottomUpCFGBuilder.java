@@ -50,8 +50,15 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 	/** Builds the CFG for a program given as an ANTLR parse tree. */
 	public Graph build(ParseTree tree) {
 		this.graph = new Graph();
+
+
+
+
+
+
 		// TODO Fill in
-		throw new UnsupportedOperationException("Fill in");
+//		throw new UnsupportedOperationException("Fill in");
+		return this.graph;
 	}
 
 	@Override

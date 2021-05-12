@@ -1,6 +1,6 @@
 grammar Fragment;
 
-@header{package pp.block4.cc.cfg;}
+//@header{package pp.block4.cc.cfg;}
 
 program: stat+ EOF;
 
