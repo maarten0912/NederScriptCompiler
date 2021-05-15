@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.antlr.runtime.Token;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -14,6 +15,7 @@ import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import pp.block4.cc.ErrorListener;
 import pp.block4.cc.cfg.FragmentParser.BreakStatContext;
 import pp.block4.cc.cfg.FragmentParser.ContStatContext;
@@ -58,27 +60,21 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 	public Graph build(ParseTree tree) {
 		this.graph = new Graph();
 		walker.walk(this, tree);
-		System.out.println(graph.size());
-		for (Node n : graph.getNodes()) {
-			System.out.println(n);
-		}
-		System.out.println("Done");
 		return this.graph;
 	}
 
 	@Override
 	public void exitProgram(FragmentParser.ProgramContext ctx) {
-//		entryNode.put(ctx,entryNode.get(ctx.getChild(0)));
-//		exitNode.put(ctx,exitNode.get(ctx.getChild(ctx.getChildCount() - 1)));
-//		for (int i = 0; i < ctx.getChildCount() - 1; i++) {
-//			Node a = exitNode.get(ctx.getChild(i));
-//			Node b = entryNode.get(ctx.getChild(i + 1));
-//			if (a != null) {
-//				a.addEdge(b);
-//			} else {
-//				System.err.println("a was null");
-//			}
-//		}
+		entryNode.put(ctx,entryNode.get(ctx.getChild(0)));
+		exitNode.put(ctx,exitNode.get(ctx.getChild(ctx.getChildCount() - 1)));
+		for (int i = 0; i < ctx.getChildCount() - 1; i++) {
+			Node a = exitNode.get(ctx.getChild(i));
+			Node b = entryNode.get(ctx.getChild(i + 1));
+			if (b != null) {
+				//b is probably entryNode of <EOF>
+				a.addEdge(b);
+			}
+		}
 	}
 
 	@Override
@@ -102,13 +98,15 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 		Node fakeEndNode = addNode(ctx, "End if");
 		exitNode.put(ctx, fakeEndNode);
 
-		Node thenNode = addNode(ctx.stat(0), ctx.stat(0).getText());
+		Node thenNode = entryNode.get(ctx.stat(0)); //addNode(ctx.stat(0), ctx.stat(0).getText());
+		Node endThenNode = exitNode.get(ctx.stat(0));
 		ifNode.addEdge(thenNode);
-		thenNode.addEdge(fakeEndNode);
+		endThenNode.addEdge(fakeEndNode);
 		if (ctx.stat().size() > 1) {
-			Node elseNode = addNode(ctx.stat(1), ctx.stat(1).getText());
+			Node elseNode = entryNode.get(ctx.stat(1)); //addNode(ctx.stat(1), ctx.stat(1).getText());
+			Node endElseNode = exitNode.get(ctx.stat(1));
 			ifNode.addEdge(elseNode);
-			elseNode.addEdge(fakeEndNode);
+			endElseNode.addEdge(fakeEndNode);
 		} else {
 			ifNode.addEdge(fakeEndNode);
 		}
@@ -121,10 +119,11 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 		Node fakeEndNode = addNode(ctx, "End while");
 		exitNode.put(ctx, fakeEndNode);
 
-		Node statNode = addNode(ctx.stat(), ctx.stat().getText());
+		Node statNode = entryNode.get(ctx.stat()); //addNode(ctx.stat(), ctx.stat().getText());
+		Node endStatNode = exitNode.get(ctx.stat());
 		whileNode.addEdge(statNode);
 		whileNode.addEdge(fakeEndNode);
-		statNode.addEdge(whileNode);
+		endStatNode.addEdge(whileNode);
 	}
 
 	@Override
@@ -136,18 +135,14 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 
 	@Override
 	public void exitBlockStat(FragmentParser.BlockStatContext ctx) {
-		List<Node> nodeList = new ArrayList<>();
 		for (int i = 0; i < ctx.stat().size() - 1; i++) {
-			nodeList.add(addNode(ctx.stat(i), ctx.stat(i).getText()));
-		}
-		for (int i = 0; i < nodeList.size() - 1; i++) {
-			Node a = nodeList.get(i);
-			Node b = nodeList.get(i + 1);
+			Node a = exitNode.get(ctx.stat(i)); //nodeList.get(i);
+			Node b = entryNode.get(ctx.stat(i)); //nodeList.get(i + 1);
 			a.addEdge(b);
 		}
-		if (!nodeList.isEmpty()) {
-			entryNode.put(ctx, nodeList.get(0));
-			exitNode.put(ctx, nodeList.get(nodeList.size()- 1));
+		if (!ctx.stat().isEmpty()) {
+			entryNode.put(ctx, entryNode.get(ctx.stat(0)));
+			exitNode.put(ctx, exitNode.get(ctx.stat(ctx.stat().size() - 1)));
 		}
 	}
 
