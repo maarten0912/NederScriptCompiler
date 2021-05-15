@@ -137,7 +137,7 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 	public void exitBlockStat(FragmentParser.BlockStatContext ctx) {
 		for (int i = 0; i < ctx.stat().size() - 1; i++) {
 			Node a = exitNode.get(ctx.stat(i)); //nodeList.get(i);
-			Node b = entryNode.get(ctx.stat(i)); //nodeList.get(i + 1);
+			Node b = entryNode.get(ctx.stat(i + 1)); //nodeList.get(i + 1);
 			a.addEdge(b);
 		}
 		if (!ctx.stat().isEmpty()) {
@@ -174,7 +174,13 @@ public class BottomUpCFGBuilder extends FragmentBaseListener {
 		for (String filename : args) {
 			File file = new File(filename);
 			System.out.println(filename);
-			System.out.println(builder.build(file));
+			Graph g = builder.build(file);
+			System.out.println(g);
+			try {
+				g.writeDOT(filename + ".bottomup.dot", true);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }
