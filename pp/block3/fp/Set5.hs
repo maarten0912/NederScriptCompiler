@@ -122,4 +122,4 @@ parserFun :: String -> FunDef
 parserFun = parser parseFunc
 
 fib :: FunDef
-fib = parserFun "function fib x = if x == 0 then 1 else ( if x == 1 then 1 else fib ( dec x )+ fib ( dec dec x )) "
+fib = parserFun "function fib x = if x == 0 then 1 else ( if x == 1 then 1 else fib( dec x )+ fib( dec dec x )) "

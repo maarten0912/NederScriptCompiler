@@ -122,7 +122,7 @@ public class Graph implements Iterable<Node> {
                 .append(" [penwidth=3,label=\"")
                 .append(node.getNr())
                 .append("_")
-                .append(node.getId())
+                .append(node.getId().replace("\"","\\\""))
                 .append("\",color=1, colorscheme=paired12] \r\n");
             nodeLabels.put(node, i);
             i++;

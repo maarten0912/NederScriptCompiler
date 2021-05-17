@@ -6,8 +6,7 @@ import Text.Read
 import Data.Char
 import Control.Applicative
 import Test.QuickCheck
-
---import Set5
+-- import Set5
 
 ------------------------------------------------------------------------------
 -- Exercise 3-FP.7
@@ -60,6 +59,52 @@ myzipWith3 f as bs cs = f <$> as <*> bs <*> cs
 -- Exercise 3-FP.9
 ------------------------------------------------------------------------------
 
+f :: IO Integer
+f = (+) <$> getInt <*> getInt
+
+getInt :: IO Integer
+getInt = fmap read getLine
+
+------------------------------------------------------------------------------
+-- Exercise 3-FP.10
+------------------------------------------------------------------------------
+
+justs :: [Maybe a] -> Maybe [a]
+justs [] = Just []
+justs (x:xs) = (:) <$> x <*> (justs xs)
+
+------------------------------------------------------------------------------
+-- Exercise 3-FP.11
+------------------------------------------------------------------------------
+
+data Parser r = P {
+      runParser :: String -> [(r , String)]
+}
+
+char :: Char -> Parser Char
+char c = P p
+      where
+      p []                    = []
+      p (x: xs ) | c == x     = [(x , xs )]
+                 | otherwise  = []
+
+parserOne :: String -> [(Char, String)]
+parserOne input = runParser (char '1') input
+
+parserOneTestSucces  = parserOne "111"
+parserOneTestFail = parserOne "a1"
+
+instance Functor Parser where
+      fmap fun [] = []
+      fmap fun ((a,b):ps) = (a,b) : (fmap fun ps)
+
+
+
+
+
+-----------------------------------------------------------------------------------
+-- Wtf is dit???
+------------------------------------------------------------------------------
 data BinTree a = Leaf a
                | Node (BinTree a) (BinTree a)
 
@@ -75,11 +120,6 @@ t2 = Node (Leaf 3) (Leaf 5)
 
 inftree :: BinTree Int
 inftree = Node (Leaf 1) inftree
-
-------------------------------------------------------------------------------
--- Exercise 3-FP.11
-------------------------------------------------------------------------------
-
 
 data A a = A { fromA :: Maybe a }
          deriving Show
