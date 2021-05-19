@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.sql.Time;
 import java.util.Random;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -21,7 +22,7 @@ public class QueueTest {
     /**
      * The amount of threads used in each test.
      */
-    private static final int AMOUNT_OF_THREADS = 2;
+    private static final int AMOUNT_OF_THREADS = 10;
 
     /**
      * Simple random object to get random integers from.
@@ -33,6 +34,8 @@ public class QueueTest {
      */
     private Queue<Integer> producerConsumerQueue;
 
+    private long start;
+
     /**
      * If you need to setup some object before the multithreaded tests start, you can do it in a method annotated with
      * {@link Before}. This methods are always executed single threaded.
@@ -40,7 +43,8 @@ public class QueueTest {
     @Before
     public void before() {
         //Setup an empty queue.
-        this.producerConsumerQueue = new CoarseGrainedLinkedListQueue<>();
+        this.producerConsumerQueue = new ConcurrentLinked<>();
+        start = System.currentTimeMillis();
     }
 
     /**
@@ -60,7 +64,7 @@ public class QueueTest {
                 this.producerConsumerQueue.pull();
                 i--;
             } catch (QueueEmptyException e) {
-                Thread.sleep(500);
+//                Thread.sleep(500);
             }
         }
     }
@@ -77,7 +81,7 @@ public class QueueTest {
                 this.producerConsumerQueue.pull();
                 i--;
             } catch (QueueEmptyException e) {
-                Thread.sleep(500);
+//                Thread.sleep(500);
             }
         }
     }
@@ -126,9 +130,8 @@ public class QueueTest {
     @After
     public void after() {
         //Assert the queue is empty.
-
         assertEquals(0, this.producerConsumerQueue.getLength());
-
+        System.out.println("Time: " + (System.currentTimeMillis() - this.start) + "ms");
     }
 
 }

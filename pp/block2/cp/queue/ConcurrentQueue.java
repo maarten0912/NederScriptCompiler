@@ -7,7 +7,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Implementation of the LinkedList{@link Queue} which uses coarse grained locking.
+ * Implementation of the LinkedList{@link Queue} which uses fine grained locking.
  */
 @ThreadSafe
 public class ConcurrentQueue<T> implements Queue<T> {

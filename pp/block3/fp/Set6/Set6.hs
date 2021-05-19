@@ -27,7 +27,6 @@ mylst2 = Cons 10 $ Cons 20 $ Cons 30 $ Nil
 mylst3 = Cons 100 $ Cons 200 $ Cons 300 $ Nil
 mylst4 = Cons 100 $ Cons 200 $ Nil
 
-
 myzipWith3' :: (a->b->c->d) -> MyList a->MyList b->MyList c->MyList d
 myzipWith3' _ Nil _ _ = Nil
 myzipWith3' _ _ Nil _ = Nil
@@ -97,8 +96,6 @@ parserOneTestFail = parserOne "a1"
 instance Functor Parser where
       fmap fun [] = []
       fmap fun ((a,b):ps) = (a,b) : (fmap fun ps)
-
-
 
 
 
