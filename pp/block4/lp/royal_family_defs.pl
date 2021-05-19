@@ -20,3 +20,6 @@ cousin(X,Y) :- uncle(Z,Y),child(X,Z).
 
 nephew(X,Y) :- cousin(X,Y),male(X).
 niece(X,Y)  :- cousin(X,Y),female(X).
+
+ancestor(X,Y) :- child(Y,X).
+ancestor(X,Y) :- child(Y,Z),ancestor(X,Z).
