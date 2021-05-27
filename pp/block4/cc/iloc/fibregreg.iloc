@@ -1,7 +1,14 @@
-loadAI r_arp,@a => r_a          // load 'a'
-loadI 2 => r_2                  // constant 2 into r_2
-loadAI r_arp,@b => r_b          // load 'b'
+            loadAI r_arp,@n => r_n          // load 'n'
+            loadI 1 => r_x                  // constant 1 into r_x
+            loadI 1 => r_y                  // constant 1 into r_y
+            loadI 1 => r_z                  // constant 1 into r_z
+            loadI 1 => r_1                  // constant 1 into r_1
 
-mult r_a,r_2 => r_a             // r_a <- a * 2
-mult r_a,r_b => r_b             // r_b <- (a * 2) * b
-add  r_a,r_b => r_a             // r_a <- (a * 2) + (a * 2 * b)
+while:      cmp_GT r_n, r_1 => r_cmp
+            cbr r_cmp -> body,endwhile
+body:       add r_x,r_y => r_z              // r_z <- r_x + r_y
+            i2i r_y => r_x                 // r_x <- r_y
+            i2i r_z => r_y                 // r_y <- r_z
+            subI r_n, 1 => r_n             // r_n <- r_n - 1
+            jumpI -> while
+endwhile:   out r_z
