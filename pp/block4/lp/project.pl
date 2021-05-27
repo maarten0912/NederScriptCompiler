@@ -17,6 +17,11 @@ snake(RowClues, ColClues, Grid, Solution)
     %, snakeConnected(Solution) % snake must be connected
     .
 
+
+printGrid(P, Solution)
+    :- puzzle(P,RowClues,ColClues,Grid)
+    , copyGrid(Grid, Solution).
+
 % ================
 % DEEPCOPY A GRID
 % ================
@@ -33,20 +38,38 @@ copyRow([Clue|R],[Clue|S]) :- copyRow(R,S).
 % CHECK HEAD TAIL
 % ================
 
-checkHeadTail(Solution) :- checkHeadTailRows(Solution, 0).
+% This will check if the grid has exactly 2 "1" values (those are head or tails)
+% and if the grid only has the values 0, 1 or 2
+checkHeadTail(Solution)
+    :- flattenGrid(Solution, Flattened)
+    , countHeadTailOccurences(Flattened, 2)
+    , checkMemberOf(Flattened, [0,1,2]).
 
-checkHeadTailRows([],_).
-checkHeadTailRows([Row|Rows], AmountOfOnes)
-    :- checkHeadTailValues(Row, AmountOfOnes)
-    , checkHeadTailRows(Rows, AmountOfOnes).
+% This will flatten the matrix such that all the values in the grid are placed into a
+% single, one-dimensional list. This makes it easier to check the properties we want
+flattenGrid([], []).
+flattenGrid([Row|Rows],Result) :- is_list(Row), flattenGrid(Rows,ResultRows), !, append(Row,ResultRows,Result).
+flattenGrid([Row|Rows],[Row|ResultRows]) :- flattenGrid(Rows,ResultRows).
 
-checkHeadTailValues([],_).
-checkHeadTailValues([1|Row],AmountOfOnes) 
-    :- checkHeadTailValues(Row, AmountOfOnes + 1), !.
-checkHeadTailValues([V|Row],AmountOfOnes)
-    :- checkHeadTailValues(Row, AmountOfOnes)
-    , V /= 1.
-    
+% This will count the number of `1`s in a given list. These are the head and tail of
+% the snake. We have specified in checkHeadTail that we want this to be 2.
+countHeadTailOccurences([],0).
+countHeadTailOccurences([1|Result],AmountOfOnes) 
+    :- countHeadTailOccurences(Result, NewAmountOfOnes)
+    , AmountOfOnes is NewAmountOfOnes+1
+    , !.
+countHeadTailOccurences([V|Result],AmountOfOnes)
+    :- not(V=1)
+    , countHeadTailOccurences(Result, AmountOfOnes).
+
+% This will check if all numbers in a given list in the given allowedList
+% In checkHeadTail we have given the allowedList [0,1,2]
+ checkMemberOf([V|Result], AllowedList)
+    :- member(V,AllowedList)
+    , checkMemberOf(Result, AllowedList)
+    ,!.
+checkMemberOf([],_).
+
 % ================
 % COUNT NEIGHBORS
 % ================
@@ -62,7 +85,7 @@ countNeighbors(Solution)
 checkGrid([Row1, Row2, Row3|Rows])
     :- check_neighbors_rows(Row1, Row2, Row3)
     ,checkGrid([Row2, Row3|Rows]), !.
-checkGrid([Row1,Row2]).
+checkGrid([_,_]).
 
 % Extend a row by putting a 0 before it and after it
 extend_row(OldRow,NewRow) :- append([0|OldRow],[0],NewRow).
@@ -98,7 +121,7 @@ count_cell(2, X) :- X = 1.
 
 % Use check_neighbors_pattern to check if middle row in the three given rows has the correct amount of neighbors
 % We do not check the first and last element of the middle row (they are the border of the extended grid)
-check_neighbors_rows([_,A2,_],[B1,B2,B3],[_,C2,_]) :- check_neighbors_pattern(B2,A2,B3,C2,B1).
+check_neighbors_rows([_,A2,_],[ResultRows,B2,B3],[_,C2,_]) :- check_neighbors_pattern(B2,A2,B3,C2,ResultRows).
 check_neighbors_rows([_,N,A3|RowA],[W,M,E|RowB],[_,S,C3|RowC]) 
     :- check_neighbors_pattern(M,N,E,S,W),
     check_neighbors_rows([N,A3|RowA],[M,E|RowB],[S,C3|RowC]).
