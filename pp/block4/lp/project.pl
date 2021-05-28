@@ -10,17 +10,13 @@
 snake(RowClues, ColClues, Grid, Solution)
     :- copyGrid(Grid,Solution)
     , checkHeadTail(Solution)
-    %, checkRowClues(Solution,RowClues)
-    %, checkColClues(Solution,ColClues)
-    %, nonTouching(Solution) % snake cannot touch itself
-    %, countNeighbors(Solution) % heads have 1 neighbor, midpoints 2
+    , checkRowClues(Solution,RowClues)
+    , checkColClues(Solution,ColClues)
+    , nonTouching(Solution) % snake cannot touch itself
+    , countNeighbors(Solution) % heads have 1 neighbor, midpoints 2
     %, snakeConnected(Solution) % snake must be connected
     .
 
-
-printGrid(P, Solution)
-    :- puzzle(P,RowClues,ColClues,Grid)
-    , copyGrid(Grid, Solution).
 
 % ================
 % DEEPCOPY A GRID
@@ -34,6 +30,67 @@ copyRow([],[]).
 copyRow([-1|R],[_|S]) :- copyRow(R,S).
 copyRow([Clue|R],[Clue|S]) :- copyRow(R,S).
 
+
+% ================
+% CHECK ROW CLUES
+% ================
+
+% We split the grid up in rows, and take a single value from the clues list, then we count the number of 1s and 2s,
+% and compare that value to the clue given by the puzzle. We do this for every row in the grid.
+checkRowClues([],[]).
+checkRowClues([_|Rows],[-1|Clues])
+    :- checkRowClues(Rows,Clues)
+    , !.
+checkRowClues([Row|Rows],[RowClue|Clues])
+    :- countRow(Row,Count)
+    , Count #= RowClue
+    , checkRowClues(Rows,Clues).
+
+% This uses the count_cell predicate, given in the COUNT NEIGHBOURS section. 
+% count_cell will make sure that the second argument is 1 if the first argument
+% is a cell with either 1 or 2. Else the second argument must be 0. countRow will
+% then count the number of snake parts in a given row.
+countRow([],0).
+countRow([V|Row], NewCount)
+    :- count_cell(V,X)
+    , countRow(Row,OldCount)
+    , NewCount is OldCount + X.
+
+% ================
+% CHECK COL CLUES
+% ================
+
+% After transposing the grid, we can use the checkRowClues function.
+checkColClues([],[]).
+checkColClues(Solution,ColClues)
+    :- transpose(Solution, TransGrid)
+    , checkRowClues(TransGrid,ColClues).
+
+% =============
+% NON TOUCHING
+% =============
+
+nonTouching([Row]) :- !.
+nonTouching([Row1,Row2|Rows])
+    :- nonTouchingRows(Row1,Row2)
+    , nonTouching(Row2|Rows).
+
+nonTouchingRows([_],[_]) :- !.
+nonTouchingRows([V1,V2|VRow], [W1,W2|WRow])
+    :- not(checkForbiddenPattern([[V1,V2],[W1,W2]]))
+    , nonTouchingRows([V2|VRow],[W2|WRow]).
+
+checkForbiddenPattern([[2,0],[0,2]]) :- !.
+checkForbiddenPattern([[1,0],[0,2]]) :- !.
+checkForbiddenPattern([[2,0],[0,1]]) :- !.
+checkForbiddenPattern([[1,0],[0,1]]) :- !.
+checkForbiddenPattern([[0,2],[2,0]]) :- !.
+checkForbiddenPattern([[0,2],[1,0]]) :- !.
+checkForbiddenPattern([[0,1],[2,0]]) :- !.
+checkForbiddenPattern([[0,1],[1,0]]) :- !.
+
+
+
 % ================
 % CHECK HEAD TAIL
 % ================
@@ -42,8 +99,9 @@ copyRow([Clue|R],[Clue|S]) :- copyRow(R,S).
 % and if the grid only has the values 0, 1 or 2
 checkHeadTail(Solution)
     :- flattenGrid(Solution, Flattened)
-    , countHeadTailOccurences(Flattened, 2)
-    , checkMemberOf(Flattened, [0,1,2]).
+    , checkMemberOf(Flattened, [0,1,2])
+    , countHeadTailOccurences(Flattened, Amount)
+    , Amount #= 2.
 
 % This will flatten the matrix such that all the values in the grid are placed into a
 % single, one-dimensional list. This makes it easier to check the properties we want
@@ -58,16 +116,14 @@ countHeadTailOccurences([1|Result],AmountOfOnes)
     :- countHeadTailOccurences(Result, NewAmountOfOnes)
     , AmountOfOnes is NewAmountOfOnes+1
     , !.
-countHeadTailOccurences([V|Result],AmountOfOnes)
-    :- not(V=1)
-    , countHeadTailOccurences(Result, AmountOfOnes).
+countHeadTailOccurences([_|Result],AmountOfOnes)
+    :- countHeadTailOccurences(Result, AmountOfOnes).
 
-% This will check if all numbers in a given list in the given allowedList
+% This will check if all numbers in a given list are in a given allowedList
 % In checkHeadTail we have given the allowedList [0,1,2]
  checkMemberOf([V|Result], AllowedList)
     :- member(V,AllowedList)
-    , checkMemberOf(Result, AllowedList)
-    ,!.
+    , checkMemberOf(Result, AllowedList).
 checkMemberOf([],_).
 
 % ================
