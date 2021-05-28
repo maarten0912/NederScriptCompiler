@@ -30,6 +30,15 @@ copyRow([],[]).
 copyRow([-1|R],[_|S]) :- copyRow(R,S).
 copyRow([Clue|R],[Clue|S]) :- copyRow(R,S).
 
+% ================
+% CHECK CONNECTED
+% ================
+
+% snakeConnected(Solution)
+%     :- copyGrid(Solution, TestGrid)
+%     , 
+
+
 
 % ================
 % CHECK ROW CLUES
@@ -73,7 +82,7 @@ checkColClues(Solution,ColClues)
 nonTouching([Row]) :- !.
 nonTouching([Row1,Row2|Rows])
     :- nonTouchingRows(Row1,Row2)
-    , nonTouching(Row2|Rows).
+    , nonTouching([Row2|Rows]).
 
 nonTouchingRows([_],[_]) :- !.
 nonTouchingRows([V1,V2|VRow], [W1,W2|WRow])
