@@ -1,6 +1,6 @@
 :- [tests].
 :- use_module(library(clpfd)). % Import the module
-:- set_prolog_flag(clpfd_monotonic, true). % setting to get useful errors sometimes
+%:- set_prolog_flag(clpfd_monotonic, true). % setting to get useful errors sometimes
 
 % =================
 % SNAKE DEFINITION
@@ -10,9 +10,9 @@
 snake(RowClues, ColClues, Grid, Solution)
     :- copyGrid(Grid,Solution)
     , checkHeadTail(Solution)
+    , nonTouching(Solution) % snake cannot touch itself
     , checkRowClues(Solution,RowClues)
     , checkColClues(Solution,ColClues)
-    , nonTouching(Solution) % snake cannot touch itself
     , countNeighbors(Solution) % heads have 1 neighbor, midpoints 2
     %, snakeConnected(Solution) % snake must be connected
     .
@@ -30,6 +30,14 @@ copyRow([],[]).
 copyRow([-1|R],[_|S]) :- copyRow(R,S).
 copyRow([Clue|R],[Clue|S]) :- copyRow(R,S).
 
+% ================
+% CHECK CONNECTED
+% ================
+
+% snakeConnected(Solution)
+%     :- copyGrid(Solution, TestGrid)
+%     , 
+
 
 % ================
 % CHECK ROW CLUES
@@ -42,8 +50,8 @@ checkRowClues([_|Rows],[-1|Clues])
     :- checkRowClues(Rows,Clues)
     , !.
 checkRowClues([Row|Rows],[RowClue|Clues])
-    :- countRow(Row,Count)
-    , Count #= RowClue
+    :- Count #= RowClue
+    , countRow(Row,Count)
     , checkRowClues(Rows,Clues).
 
 % This uses the count_cell predicate, given in the COUNT NEIGHBOURS section. 
@@ -54,7 +62,7 @@ countRow([],0).
 countRow([V|Row], NewCount)
     :- count_cell(V,X)
     , countRow(Row,OldCount)
-    , NewCount is OldCount + X.
+    , NewCount #= OldCount + X.
 
 % ================
 % CHECK COL CLUES
@@ -70,26 +78,23 @@ checkColClues(Solution,ColClues)
 % NON TOUCHING
 % =============
 
-nonTouching([Row]) :- !.
+nonTouching([_]) :- !.
 nonTouching([Row1,Row2|Rows])
     :- nonTouchingRows(Row1,Row2)
-    , nonTouching(Row2|Rows).
+    , nonTouching([Row2|Rows]).
 
 nonTouchingRows([_],[_]) :- !.
 nonTouchingRows([V1,V2|VRow], [W1,W2|WRow])
     :- not(checkForbiddenPattern([[V1,V2],[W1,W2]]))
     , nonTouchingRows([V2|VRow],[W2|WRow]).
 
-checkForbiddenPattern([[2,0],[0,2]]) :- !.
-checkForbiddenPattern([[1,0],[0,2]]) :- !.
-checkForbiddenPattern([[2,0],[0,1]]) :- !.
-checkForbiddenPattern([[1,0],[0,1]]) :- !.
-checkForbiddenPattern([[0,2],[2,0]]) :- !.
-checkForbiddenPattern([[0,2],[1,0]]) :- !.
-checkForbiddenPattern([[0,1],[2,0]]) :- !.
-checkForbiddenPattern([[0,1],[1,0]]) :- !.
+checkForbiddenPattern([[A,0],[0,B]])
+    :- 1 #=< A
+    ,  1 #=< B.
 
-
+checkForbiddenPattern([[0,A],[B,0]])
+    :- 1 #=< A
+    ,  1 #=< B.
 
 % ================
 % CHECK HEAD TAIL
@@ -114,7 +119,7 @@ flattenGrid([Row|Rows],[Row|ResultRows]) :- flattenGrid(Rows,ResultRows).
 countHeadTailOccurences([],0).
 countHeadTailOccurences([1|Result],AmountOfOnes) 
     :- countHeadTailOccurences(Result, NewAmountOfOnes)
-    , AmountOfOnes is NewAmountOfOnes+1
+    , AmountOfOnes #= NewAmountOfOnes+1
     , !.
 countHeadTailOccurences([_|Result],AmountOfOnes)
     :- countHeadTailOccurences(Result, AmountOfOnes).
@@ -181,3 +186,6 @@ check_neighbors_rows([_,A2,_],[ResultRows,B2,B3],[_,C2,_]) :- check_neighbors_pa
 check_neighbors_rows([_,N,A3|RowA],[W,M,E|RowB],[_,S,C3|RowC]) 
     :- check_neighbors_pattern(M,N,E,S,W),
     check_neighbors_rows([N,A3|RowA],[M,E|RowB],[S,C3|RowC]).
+
+
+:- time(solvePuzzle(p4x4)).
