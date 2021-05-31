@@ -53,7 +53,30 @@ public class NumWordProcessor extends NumWordBaseVisitor<Integer> {
 		return visit(tree);
 	}
 
-	// Override the visitor methods.
-	// Each visitor method should call visit(child)
-	// if and when it wants to visit that child node.
+	@Override
+	public Integer visitSentence(NumWordParser.SentenceContext ctx) {
+		int result = 0;
+		StringBuilder resstring = new StringBuilder();
+		for (int i = 0; i < ctx.number().size(); i++) {
+			result += visit(ctx.number(i));
+			resstring.append(ctx.number(i).getText());
+			resstring.append(" ");
+			resstring.append(ctx.word(i).getText());
+
+			if (i < ctx.number().size() - 2) {
+				resstring.append(", ");
+			} else if (i == ctx.number().size() - 2) {
+				resstring.append(" and ");
+			}
+		}
+
+		System.out.println("Resulting sentence: " + resstring);
+
+		return result;
+	}
+
+	@Override
+	public Integer visitNumber(NumWordParser.NumberContext ctx) {
+		return Integer.parseInt(ctx.NUMBER().getText());
+	}
 }

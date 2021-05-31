@@ -129,6 +129,62 @@ public class Checker extends SimplePascalBaseListener {
 		setEntry(ctx, ctx);
 	}
 
+	@Override
+	public void exitVar(VarContext ctx) {
+		super.exitVar(ctx);
+	}
+
+	@Override
+	public void exitBlock(BlockContext ctx) {
+		super.exitBlock(ctx);
+	}
+
+	@Override
+	public void exitAssStat(AssStatContext ctx) {
+		super.exitAssStat(ctx);
+	}
+
+	@Override
+	public void exitIfStat(IfStatContext ctx) {
+		super.exitIfStat(ctx);
+	}
+
+	@Override
+	public void exitWhileStat(WhileStatContext ctx) {
+		super.exitWhileStat(ctx);
+	}
+
+	@Override
+	public void exitBlockStat(BlockStatContext ctx) {
+		super.exitBlockStat(ctx);
+	}
+
+	@Override
+	public void exitInStat(InStatContext ctx) {
+		super.exitInStat(ctx);
+	}
+
+	@Override
+	public void exitOutStat(OutStatContext ctx) {
+		super.exitOutStat(ctx);
+	}
+
+	@Override
+	public void exitIdTarget(IdTargetContext ctx) {
+		super.exitIdTarget(ctx);
+	}
+
+	@Override
+	public void exitIntType(IntTypeContext ctx) {
+		super.exitIntType(ctx);
+	}
+
+	@Override
+	public void exitBoolType(BoolTypeContext ctx) {
+		super.exitBoolType(ctx);
+	}
+
+
 	/** Indicates if any errors were encountered in this tree listener. */
 	public boolean hasErrors() {
 		return !getErrors().isEmpty();
