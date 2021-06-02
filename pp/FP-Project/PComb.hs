@@ -36,3 +36,4 @@ parserFailure = runParser failure
 
 instance Functor Parser where
     fmap f p = P (\x -> [(f r, s) | (r,s) <- runParser p x])
+
