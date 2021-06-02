@@ -37,3 +37,16 @@ parserFailure = runParser failure
 instance Functor Parser where
     fmap f p = P (\x -> [(f r, s) | (r,s) <- runParser p x])
 
+instance Applicative Parser where
+    pure p = P (\x -> [(p, x)])
+    p1 <*> p2 = P (\s -> [ (r1 r2, s2)
+                            | (r1, s1) <- runParser p1 s,
+                              (r2, s2) <- runParser p2 s1 ])
+
+
+instance Alternative Parser where
+    empty = P (\x -> [])
+    p1 <|> p2 = P (\x -> if (length (par1 x)) > 0 then par1 x else par2 x)
+        where
+            par1 = runParser p1
+            par2 = runParser p2
