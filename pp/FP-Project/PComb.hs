@@ -43,7 +43,6 @@ instance Applicative Parser where
                             | (r1, s1) <- runParser p1 s,
                               (r2, s2) <- runParser p2 s1 ])
 
-
 instance Alternative Parser where
     empty = P (\x -> [])
     p1 <|> p2 = P (\x -> if (length (par1 x)) > 0 then par1 x else par2 x)
