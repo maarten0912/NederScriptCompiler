@@ -27,14 +27,7 @@ whitespace :: Parser a -> Parser a
 whitespace p1 = between (many (char ' ' <|> char '\n' <|> char '\t')) p1 (many (char ' ' <|> char '\n' <|> char '\t'))
 
 sep1 :: Parser a -> Parser b -> Parser [a]
-sep1 p1 s = (:) <$> p1 <*> (many ((\x y -> y) <$> s <*> p1))
-
-
--- p1 <|> 
--- p1 <*> s <*> p1 <|>
--- p1 <*> s <*> p1 <*> s <*> p1 <|>
--- p1 <*> s <*> p1 <*> s <*> p1 <*> s <*> p1 <|>
--- ...
+sep1 p1 s = (:) <$> p1 <*> (many (s *> p1))
 
 sep :: Parser a -> Parser b -> Parser [a]
 sep p1 s = sep1 p1 s <|> pure []
