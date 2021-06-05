@@ -14,7 +14,19 @@ import Test.QuickCheck.All
 
 
 data Prog
-    = Function
+    = Function Function
+
+data Function
+    = 
+
+
+data Expr 
+    = Term Term
+    | Add Term Expr
+
+data Term
+    = Factor Factor
+    | Mult Factor Term
 
 data Factor
     = Const Integer
@@ -22,6 +34,19 @@ data Factor
     | IfElse Expr Ordering Expr Expr Expr
 
 data Ordering = Smaller | Equal | Greater
+
+
+-- 〈program〉  ::= (〈function〉)+
+-- 〈function〉 ::= identifier (identifier | integer)∗ ’:=’〈expr〉’;’
+-- 〈expr〉     ::=〈term〉
+--                |〈term〉(’+’|’-’)〈expr〉
+-- 〈term〉     ::=〈factor〉
+--                |〈factor〉’*’〈term〉
+-- 〈factor〉   ::= integer
+--                | identifier(’(’〈expr〉(’,’〈expr〉)∗’)’)?
+--                | ’if’ ’(’〈expr〉〈ordering〉〈expr〉’)’ ’then’ ’{’〈expr〉’}’ ’else’ ’{’〈expr〉’}’
+--                | ’(’〈expr〉’)’
+-- 〈ordering〉 ::= ’<’ | ’==’ | ’>’
 
 -- data Expr = Const Integer
 --           | Var String
@@ -37,18 +62,6 @@ data Ordering = Smaller | Equal | Greater
 
 -- data FunDef = FunDef String String Expr
 --             deriving Show
-
-
--- 〈program〉  ::= (〈function〉)+
--- 〈function〉 ::= identifier (identifier | integer)∗ ’:=’〈expr〉’;’
--- 〈expr〉     ::=〈term〉|〈term〉(’+’|’-’)〈expr〉
--- 〈term〉     ::=〈factor〉|〈factor〉’*’〈term〉
--- 〈factor〉   ::= integer
---                | identifier(’(’〈expr〉(’,’〈expr〉)∗’)’)?
---                | ’if’ ’(’〈expr〉〈ordering〉〈expr〉’)’ ’then’ ’{’〈expr〉’}’ ’else’ ’{’〈expr〉’}’
---                | ’(’〈expr〉’)’
--- 〈ordering〉 ::= ’<’ | ’==’ | ’>’
-
 
 
 -- QuickCheck: all prop_* tests
