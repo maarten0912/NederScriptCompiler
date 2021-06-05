@@ -30,11 +30,18 @@ sep1 :: Parser a -> Parser b -> Parser [a]
 sep1 p1 s = (:) <$> p1 <*> (many ((\x y -> y) <$> s <*> p1))
 
 
+-- p1 <|> 
+-- p1 <*> s <*> p1 <|>
+-- p1 <*> s <*> p1 <*> s <*> p1 <|>
+-- p1 <*> s <*> p1 <*> s <*> p1 <*> s <*> p1 <|>
+-- ...
+
 sep :: Parser a -> Parser b -> Parser [a]
 sep p1 s = sep1 p1 s <|> pure []
 
 option :: a -> Parser a -> Parser a
 option x p = p <|> pure x
+
 
 string :: String -> Parser String
 string [] = pure ""
