@@ -12,6 +12,9 @@ import PComb
 letter :: Parser Char
 letter =  foldr (<|>) (char 'a') (char <$> (['b'..'z'] ++ ['A' .. 'Z']))
 
+lowerLetter :: Parser Char
+lowerLetter =  foldr (<|>) (char 'a') (char <$> (['b'..'z']))
+
 dig :: Parser Char
 dig =  foldr (<|>) (char '0') (char <$> (['1'..'9']))
 
@@ -20,36 +23,32 @@ between p1 p2 p3 = (p1 *> p2) <* p3
 
 --TODO: fix
 whitespace :: Parser a -> Parser a
-whitespace p1 = (between (char ' ' <|> char '\n' <|> char '\t') p1 (char ' ' <|> char '\n' <|> char '\t')) <|> p1 
+whitespace p1 = between (many (char ' ' <|> char '\n' <|> char '\t')) p1 (many (char ' ' <|> char '\n' <|> char '\t'))
 
 sep1 :: Parser a -> Parser b -> Parser [a]
-sep1 p1 s = (:) <$> p1 <*> many (s *> p1)
+sep1 p1 s = (:) <$> p1 <*> (many (s *> p1))
 
--- p1 <|> 
--- p1 <*> s <*> p1 <|>
--- p1 <*> s <*> p1 <*> s <*> p1 <|>
--- p1 <*> s <*> p1 <*> s <*> p1 <*> s <*> p1 <|>
--- ...
-
--- sep :: Parser a -> Parser b -> Parser [a]
+sep :: Parser a -> Parser b -> Parser [a]
+sep p1 s = sep1 p1 s <|> pure []
 
 option :: a -> Parser a -> Parser a
 option x p = p <|> pure x
 
--- string :: String -> Parser String
--- string (c:cs) = many ( char c <*> string cs)
+string :: String -> Parser String
+string [] = pure ""
+string (x:xs) = (:) <$> (char x) <*> (string xs)
 
--- identifier :: Parser String
+identifier :: Parser String
+identifier = (:) <$> lowerLetter <*> (many (lowerLetter <|> dig))
 
--- integer :: Parser Integer
+integer :: Parser Integer
+integer = read <$> whitespace (many dig)
 
--- symbol :: String -> Parser String
--- symbol c = P p
---     where
---       p (Stream [])                    = []
---       p (Stream (x: xs )) | c == x     = [(x , Stream xs )]
---                           | otherwise  = []
+symbol :: String -> Parser String
+symbol xs = whitespace (string xs)
 
--- parens :: Parser a -> Parser a
+parens :: Parser a -> Parser a
+parens p = between (char '(') p (char ')')
 
--- braces :: Parser a -> Parser a
+braces :: Parser a -> Parser a
+braces p = between (char '{') p (char '}')
