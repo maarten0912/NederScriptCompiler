@@ -22,8 +22,8 @@ between p1 p2 p3 = (p1 *> p2) <* p3
 whitespace :: Parser a -> Parser a
 whitespace p1 = (between (char ' ' <|> char '\n' <|> char '\t') p1 (char ' ' <|> char '\n' <|> char '\t')) <|> p1 
 
--- sep1 :: Parser a -> Parser b -> Parser [a]
--- sep1 p1 s = p1 <|> (p1 <*> s <*> p1) <|> (p1 <*> s <*> p1)
+sep1 :: Parser a -> Parser b -> Parser [a]
+sep1 p1 s = (:) <$> p1 <*> many (s *> p1)
 
 -- p1 <|> 
 -- p1 <*> s <*> p1 <|>
@@ -34,14 +34,10 @@ whitespace p1 = (between (char ' ' <|> char '\n' <|> char '\t') p1 (char ' ' <|>
 -- sep :: Parser a -> Parser b -> Parser [a]
 
 option :: a -> Parser a -> Parser a
-option x p = p <|> P (\x -> 
+option x p = p <|> pure x
 
 -- string :: String -> Parser String
--- string c = P p
---     where
---       p (Stream [])                    = []
---       p (Stream (x: xs )) | c == x     = [(x , Stream xs )]
---                           | otherwise  = []
+-- string (c:cs) = many ( char c <*> string cs)
 
 -- identifier :: Parser String
 
