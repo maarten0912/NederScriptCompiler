@@ -13,6 +13,41 @@ import Test.QuickCheck
 import Test.QuickCheck.All
 
 
+data Prog
+    = Function
+
+data Factor
+    = Const Integer
+    | Identifier Expr Expr
+    | IfElse Expr Ordering Expr Expr Expr
+
+data Ordering = Smaller | Equal | Greater
+
+-- data Expr = Const Integer
+--           | Var String
+--           | Mult Expr Expr
+--           | Add Expr Expr
+--           | If Cond Expr Expr
+--           | Dec Expr
+--           | Call String Expr
+--           deriving Show
+
+-- data Cond = Cond Expr Expr
+--           deriving Show
+
+-- data FunDef = FunDef String String Expr
+--             deriving Show
+
+
+-- 〈program〉  ::= (〈function〉)+
+-- 〈function〉 ::= identifier (identifier | integer)∗ ’:=’〈expr〉’;’
+-- 〈expr〉     ::=〈term〉|〈term〉(’+’|’-’)〈expr〉
+-- 〈term〉     ::=〈factor〉|〈factor〉’*’〈term〉
+-- 〈factor〉   ::= integer
+--                | identifier(’(’〈expr〉(’,’〈expr〉)∗’)’)?
+--                | ’if’ ’(’〈expr〉〈ordering〉〈expr〉’)’ ’then’ ’{’〈expr〉’}’ ’else’ ’{’〈expr〉’}’
+--                | ’(’〈expr〉’)’
+-- 〈ordering〉 ::= ’<’ | ’==’ | ’>’
 
 
 
