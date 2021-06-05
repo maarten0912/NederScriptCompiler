@@ -14,54 +14,107 @@ import Test.QuickCheck.All
 
 
 data Prog
-    = Function Function
+    = OneFunction Function
+    | MoreFunctions Function Prog
 
 data Function
-    = 
+    = Fun String FunArgs Expr
 
+data FunArgs
+    = NoArg
+    | MoreIntArgs Integer FunArgs
+    | MoreIdentArgs String FunArgs
 
-data Expr 
-    = Term Term
+data Expr
+    = SingleExpr Term
     | Add Term Expr
+    | Sub Term Expr
 
 data Term
-    = Factor Factor
-    | Mult Factor Term
+    = SingleTerm Factor
+    | Mult Factor Expr
 
 data Factor
-    = Const Integer
-    | Identifier Expr Expr
-    | IfElse Expr Ordering Expr Expr Expr
+    = Constant Integer
+    | Identifier String CallArgs
+    | IfElse Expr Orderings Expr Expr Expr
+    | Parens Expr
 
-data Ordering = Smaller | Equal | Greater
+data CallArgs
+    = NoCallArg
+    | OneArg Expr
+    | MoreArgs Expr CallArgs
 
+data Orderings = Smaller | Equal | Greater
 
 -- 〈program〉  ::= (〈function〉)+
 -- 〈function〉 ::= identifier (identifier | integer)∗ ’:=’〈expr〉’;’
--- 〈expr〉     ::=〈term〉
---                |〈term〉(’+’|’-’)〈expr〉
--- 〈term〉     ::=〈factor〉
---                |〈factor〉’*’〈term〉
+-- 〈expr〉     ::=〈term〉|〈term〉(’+’|’-’)〈expr〉
+-- 〈term〉     ::=〈factor〉|〈factor〉’*’〈term〉
 -- 〈factor〉   ::= integer
---                | identifier(’(’〈expr〉(’,’〈expr〉)∗’)’)?
+--                | identifier ( ’(’〈expr〉( ’,’〈expr〉)∗ ’)’ )?
 --                | ’if’ ’(’〈expr〉〈ordering〉〈expr〉’)’ ’then’ ’{’〈expr〉’}’ ’else’ ’{’〈expr〉’}’
 --                | ’(’〈expr〉’)’
 -- 〈ordering〉 ::= ’<’ | ’==’ | ’>’
 
--- data Expr = Const Integer
---           | Var String
---           | Mult Expr Expr
---           | Add Expr Expr
---           | If Cond Expr Expr
---           | Dec Expr
---           | Call String Expr
---           deriving Show
+-- fibonacci :: Prog
+-- fibonacci = 
+--     MoreFunctions (
+--         Fun (
+--             "fibonacci",
+--             MoreIntArgs (0, NoArg),
+--             SingleExpr (
+--                 SingleTerm (
+--                     Constant (0)
+--                 )
+--             )
+--         )
+--         MoreFunctions (
+--             Fun (
+--                 "fibonacci",
+--                 MoreIntArgs (1, NoArg),
+--                 SingleExpr (
+--                     SingleTerm (
+--                         Constant (1)
+--                     )
+--                 )
+--             )
+--             OneFunction (
+--                 Fun (
+--                     "fibonacci",
+--                     MoreIdentArgs ("n", NoArg), 
+--                     Add (
+--                         SingleTerm (
+--                             Identifier (
+--                                 "fibonacci",
+--                                 OneArg (
+--                                     Sub (
+--                                         SingleTerm (Identifier ("n", NoCallArg)),
+--                                         SingleExpr (SingleTerm (Constant (1)))
+--                                     ) 
+--                                 )
+--                             )
+--                         )
+--                         SingleExpr (
+--                             SingleTerm (
+--                                 Identifier (
+--                                     "fibonacci",
+--                                     OneArg (
+--                                         Sub (
+--                                             SingleTerm (Identifier ("n", NoCallArg)),
+--                                             SingleExpr (SingleTerm (Constant (2)))
+--                                         ) 
+--                                     )
+--                                 )
+--                             )
+--                         )
+--                     )
+--                 )
+--             )
+--         )
+--     )
 
--- data Cond = Cond Expr Expr
---           deriving Show
 
--- data FunDef = FunDef String String Expr
---             deriving Show
 
 
 -- QuickCheck: all prop_* tests
