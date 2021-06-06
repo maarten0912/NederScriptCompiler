@@ -155,10 +155,10 @@ fib =
                     (SingleExpr (SingleTerm (Constant 3)))
                     (SingleExpr (SingleTerm (Constant 1)))
                     (Add
-                        (SingleTerm 
+                        (SingleTerm
                             (Identifier
                                 "fib"
-                                (OneArg 
+                                (OneArg
                                     (Sub
                                         (SingleTerm (Identifier "n" NoCallArg))
                                         (SingleExpr (SingleTerm (Constant 1)))
@@ -167,10 +167,10 @@ fib =
                             )
                         )
                         (SingleExpr
-                            (SingleTerm 
+                            (SingleTerm
                                 (Identifier
                                     "fib"
-                                    (OneArg 
+                                    (OneArg
                                         (Sub
                                             (SingleTerm (Identifier "n" NoCallArg))
                                             (SingleExpr (SingleTerm (Constant 2)))
@@ -179,26 +179,25 @@ fib =
                                 )
                             )
                         )
-                        
+
                     )
                 )
             )
         )
 
 sum :: Prog
-sum = 
+sum =
     MoreFunctions
         "sum"
         (MoreIntArgs 0 NoArg)
         (SingleExpr (SingleTerm (Constant 0)))
-        (OneFunctionpretty (MoreFunctions s NoArg e p) = s ++ " := " ++ (prettyE e) ++ ";\n" ++ (pretty p)
-
+        (OneFunction
             "sum"
             (MoreIdentArgs "a" NoArg)
             (Add
-                (SingleTerm 
-                    (Identifier 
-                        "sum" 
+                (SingleTerm
+                    (Identifier
+                        "sum"
                         (OneArg
                             (Sub
                                 (SingleTerm (Identifier "a" NoCallArg))
@@ -210,6 +209,70 @@ sum =
                 (SingleExpr (SingleTerm (Identifier "a" NoCallArg)))
             )
         )
+
+
+add :: Prog
+add =
+    OneFunction
+        "add"
+        (MoreIdentArgs
+            "x"
+            (MoreIdentArgs
+                "y"
+                NoArg
+            )
+        )
+        (Add
+            (SingleTerm
+                (Identifier "x" NoCallArg)
+            )
+            (SingleExpr
+                (SingleTerm
+                    (Identifier "y" NoCallArg)
+                )
+            )
+        )
+
+inc :: Prog
+inc =
+    OneFunction
+        "inc"
+        NoArg
+        (SingleExpr
+            (SingleTerm
+                (Identifier
+                    "add"
+                    (OneArg
+                        (SingleExpr
+                            (SingleTerm
+                                (Constant 1)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
+eleven :: Prog
+eleven =
+    OneFunction
+        "eleven"
+        NoArg
+        (SingleExpr
+            (SingleTerm
+                (Identifier
+                    "inc"
+                    (OneArg
+                        (SingleExpr
+                            (SingleTerm
+                                (Constant 10)
+                            )
+                        )
+                    )
+                )
+            )
+        )
+
 
 -- QuickCheck: all prop_* tests
 return []
