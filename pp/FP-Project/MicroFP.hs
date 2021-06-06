@@ -32,7 +32,7 @@ data Expr
 
 data Term
     = SingleTerm Factor
-    | Mult Factor Expr
+    | Mult Factor Term
     deriving Show
 
 data Factor
@@ -50,6 +50,23 @@ data CallArgs
 
 data Orderings = Smaller | Equal | Greater
                 deriving Show
+
+-- program :: Parser Prog
+-- program = function
+
+-- function :: Parser Prog
+-- function = OneFunction <$> identifier <*> (MoreIdentArgs <$> identifier ) <*> (string ":=" *> (expr <* char ';'))
+
+expr :: Parser Expr
+expr = Add <$> term <*> (char '+' *> expr) <|> Sub <$> term <*> (char '-' *> expr) <|> SingleExpr <$> term
+
+term :: Parser Term
+term = Mult <$> factor <*> (char '*' *> term) <|> SingleTerm <$> factor
+
+factor :: Parser Factor
+factor = Constant <$> integer
+
+-- ordering :: Parser Orderings
 
 -- 〈program〉  ::= (〈function〉)+
 -- 〈function〉 ::= identifier (identifier | integer)∗ ’:=’〈expr〉’;’
@@ -79,7 +96,7 @@ prettyE (Sub t e) = (prettyT t) ++ " - " ++ (prettyE e)
 
 prettyT :: Term -> String
 prettyT (SingleTerm f) = prettyF f
-prettyT (Mult f e) = (prettyF f) ++ " * " ++ (prettyE e)
+prettyT (Mult f t) = (prettyF f) ++ " * " ++ (prettyT t)
 
 prettyF :: Factor -> String
 prettyF (Constant c) = show c
@@ -285,7 +302,6 @@ twice =
             )
         )
 
-
 add :: Prog
 add =
     OneFunction
@@ -347,7 +363,6 @@ eleven =
                 )
             )
         )
-
 
 -- QuickCheck: all prop_* tests
 return []
