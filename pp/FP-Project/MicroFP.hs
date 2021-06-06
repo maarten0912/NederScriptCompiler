@@ -55,7 +55,7 @@ data Orderings = Smaller | Equal | Greater
 -- program = function
 
 -- function :: Parser Prog
--- function = OneFunction <$> identifier <*> (MoreIdentArgs <$> identifier ) <*> (string ":=" *> (expr <* char ';'))
+-- function = OneFunction <$> identifier <*> (NoArg <$> char ' ') <*> (string ":=" *> (expr <* char ';'))
 
 expr :: Parser Expr
 expr = Add <$> term <*> (char '+' *> expr) <|> Sub <$> term <*> (char '-' *> expr) <|> SingleExpr <$> term
@@ -64,7 +64,7 @@ term :: Parser Term
 term = Mult <$> factor <*> (char '*' *> term) <|> SingleTerm <$> factor
 
 factor :: Parser Factor
-factor = Constant <$> integer
+factor = Parens <$> (parens expr) <|> (Constant <$> integer)
 
 -- ordering :: Parser Orderings
 
