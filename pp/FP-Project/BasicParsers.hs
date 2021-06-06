@@ -38,7 +38,7 @@ string [] = pure ""
 string (x:xs) = (:) <$> char x <*> string xs
 
 identifier :: Parser String
-identifier = (:) <$> lowerLetter <*> many (lowerLetter <|> dig)
+identifier = whitespace ((:) <$> lowerLetter <*> many (lowerLetter <|> dig))
 
 integer :: Parser Integer
 integer = read <$> whitespace (many dig)
