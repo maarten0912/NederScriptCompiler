@@ -191,8 +191,7 @@ sum =
         "sum"
         (MoreIntArgs 0 NoArg)
         (SingleExpr (SingleTerm (Constant 0)))
-        (OneFunctionpretty (MoreFunctions s NoArg e p) = s ++ " := " ++ (prettyE e) ++ ";\n" ++ (pretty p)
-
+        (OneFunction
             "sum"
             (MoreIdentArgs "a" NoArg)
             (Add
@@ -208,6 +207,71 @@ sum =
                     )
                 )
                 (SingleExpr (SingleTerm (Identifier "a" NoCallArg)))
+            )
+        )
+
+div :: Prog
+div =
+    OneFunction
+        "div"
+        (MoreIdentArgs "x" (MoreIdentArgs "y" NoArg))
+        (SingleExpr
+            (SingleTerm
+                (IfElse
+                    (SingleExpr (SingleTerm (Identifier "x" NoCallArg)))
+                    Smaller
+                    (SingleExpr (SingleTerm (Identifier "y" NoCallArg)))
+                    (SingleExpr (SingleTerm (Constant 0)))
+                    (Add
+                        (SingleTerm (Constant 1))
+                        (SingleExpr
+                            (SingleTerm 
+                                (Identifier
+                                    "div"
+                                    (MoreArgs 
+                                        (Sub
+                                            (SingleTerm (Identifier "x" NoCallArg))
+                                            (SingleExpr (SingleTerm (Identifier "y" NoCallArg)))
+                                        )
+                                        (OneArg
+                                            (SingleExpr (SingleTerm (Identifier "y" NoCallArg)))
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                        
+                    )
+                )
+            )
+        )
+
+twice :: Prog
+twice = 
+    OneFunction
+        "twice"
+        (MoreIdentArgs "f" (MoreIdentArgs "x" NoArg))
+        (SingleExpr
+            (SingleTerm
+                (Identifier 
+                    "f" 
+                    (OneArg
+                        (SingleExpr
+                            (SingleTerm
+                                (Identifier 
+                                    "f"
+                                    (OneArg
+                                        (SingleExpr
+                                            (SingleTerm
+                                                (Identifier "x" NoCallArg)
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
             )
         )
 
