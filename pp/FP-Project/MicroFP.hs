@@ -61,9 +61,9 @@ data Orderings = Smaller | Equal | Greater
 --                | ’(’〈expr〉’)’
 -- 〈ordering〉 ::= ’<’ | ’==’ | ’>’
 
-pretty :: Prog -> String
-pretty (OneFunction s fa e) = s ++ " " ++ (prettyFA fa) ++ ":= " ++ (prettyE e) ++ ";\n"
-pretty (MoreFunctions s fa e p) = s ++ " " ++ (prettyFA fa) ++ " := " ++ (prettyE e) ++ ";\n" ++ (pretty p)
+prettyP :: Prog -> String
+prettyP (OneFunction s fa e) = s ++ " " ++ (prettyFA fa) ++ ":= " ++ (prettyE e) ++ ";\n"
+prettyP (MoreFunctions s fa e p) = s ++ " " ++ (prettyFA fa) ++ " := " ++ (prettyE e) ++ ";\n" ++ (prettyP p)
 
 prettyFA :: FunArgs -> String
 prettyFA NoArg = ""
@@ -92,13 +92,20 @@ prettyF (Parens e) = "(" ++ (prettyE e) ++ ")"
 
 prettyCA :: CallArgs -> String
 prettyCA (OneArg e) = prettyE e
-prettyCA (MoreArgs e ca) = prettyE e ++ " " ++ (prettyCA ca)
-
+prettyCA (MoreArgs e ca) = prettyE e ++ ", " ++ (prettyCA ca)
 
 prettyO :: Orderings -> String
 prettyO Smaller = "<"
 prettyO Equal = "=="
 prettyO Greater = ">"
+
+class Pretty a where
+    pretty :: a -> IO()
+
+instance Pretty Prog where
+    --putStr is to make sure that \n is shown as new line
+    pretty prog = putStr $ prettyP prog
+
 
 fibonacci :: Prog
 fibonacci =
@@ -207,6 +214,74 @@ sum =
                     )
                 )
                 (SingleExpr (SingleTerm (Identifier "a" NoCallArg)))
+            )
+        )
+
+div :: Prog
+div =
+    OneFunction
+        "div"
+        (MoreIdentArgs "x" (MoreIdentArgs "y" NoArg))
+        (SingleExpr
+            (SingleTerm
+                (IfElse
+                    (SingleExpr (SingleTerm (Identifier "x" NoCallArg)))
+                    Smaller
+                    (SingleExpr (SingleTerm (Identifier "y" NoCallArg)))
+                    (SingleExpr (SingleTerm (Constant 0)))
+                    (Add
+                        (SingleTerm (Constant 1))
+                        (SingleExpr
+                            (SingleTerm 
+                                (Identifier
+                                    "div"
+                                    (MoreArgs 
+                                        (SingleExpr (SingleTerm
+                                        (Parens
+                                            (Sub
+                                                (SingleTerm (Identifier "x" NoCallArg))
+                                                (SingleExpr (SingleTerm (Identifier "y" NoCallArg)))
+                                            )
+                                        )))
+                                        (OneArg
+                                            (SingleExpr (SingleTerm (Identifier "y" NoCallArg)))
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                        
+                    )
+                )
+            )
+        )
+
+twice :: Prog
+twice = 
+    OneFunction
+        "twice"
+        (MoreIdentArgs "f" (MoreIdentArgs "x" NoArg))
+        (SingleExpr
+            (SingleTerm
+                (Identifier 
+                    "f" 
+                    (OneArg
+                        (SingleExpr
+                            (SingleTerm
+                                (Identifier 
+                                    "f"
+                                    (OneArg
+                                        (SingleExpr
+                                            (SingleTerm
+                                                (Identifier "x" NoCallArg)
+                                            )
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
             )
         )
 
