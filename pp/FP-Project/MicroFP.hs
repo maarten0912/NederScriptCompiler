@@ -13,10 +13,10 @@ import Test.QuickCheck
 import Test.QuickCheck.All
 
 data Prog = Prog [Func]
-    deriving Show
+    deriving (Show, Eq)
 
 data Func = Func String [Expr] Expr
-    deriving Show
+    deriving (Show, Eq)
 
 data Expr = Integer Integer
           | Identifier String
@@ -26,13 +26,15 @@ data Expr = Integer Integer
           | Add Expr Expr
           | Sub Expr Expr
           | Mult Expr Expr
-          deriving Show
+          deriving (Show, Eq)
 
 data Cond = Cond Expr Comp Expr
-    deriving Show
+    deriving (Show, Eq)
 
 data Comp = Smaller | Equal | Greater
-    deriving Show
+    deriving (Show, Eq)
+
+-- fib n := if (n < 3) then { 1 } else { fib (n-1) + fib (n-2)};
 
 prog :: Parser Prog
 prog = Prog <$> (some func)
@@ -60,6 +62,55 @@ comp = (\x -> Smaller) <$> (char '<') <|> (\x -> Equal) <$> (string "==") <|> (\
 
 compile :: String -> Prog
 compile x = fst . head $ runParser prog (Stream x)
+
+eval :: Prog -> String -> [Integer] -> Integer
+eval (Prog []) fun args = error ("No function with the name \"" ++ fun ++ "\" found")
+eval (Prog ((Func funname as e):fs)) fun args | funname == fun = calc (bind as args e)
+                                              | otherwise = eval (Prog fs) fun args
+
+--     funargs    values    expression  bound expression
+bind :: [Expr] -> [Integer] -> Expr -> Expr
+bind [] [] e = e
+bind (fa:funargs) (v:values) expression = bind funargs values (replace expression fa v )
+
+replace :: Expr -> Expr -> Integer -> Expr
+replace (Add x y) fa v = Add (replace x fa v) (replace y fa v)
+replace (Sub x y) fa v = Sub (replace x fa v) (replace y fa v)
+replace (Mult x y) fa v = Mult (replace x fa v) (replace y fa v)
+replace (Parens x) fa v = replace x fa v
+replace (IfElse c x y) fa v = IfElse c (replace x fa v) (replace y fa v)
+replace (Call s []) fa v = Call s []
+replace (Call s es) fa v = Call s (replaceArray es fa v)
+replace e fa v | e == fa = (Integer v)
+               | otherwise = e
+
+replaceArray :: [Expr] -> Expr -> Integer -> [Expr]
+replaceArray [] _ _ = []
+replaceArray (e:es) fa v = (replace e fa v) : (replaceArray es fa v)
+
+calc :: Expr -> Integer
+calc (Mult x y)     = calc x * calc y
+calc (Sub x y)      = calc x - calc y
+calc (Add x y)      = calc x + calc y
+calc (Parens x)     = calc x
+calc (Integer x)    = x
+calc e              = calc (reduce e)
+
+reduce :: Expr -> Expr
+reduce (IfElse c x y)   | calcCond c == True = x
+                        | otherwise = y
+reduce e                = e
+
+calcCond :: Cond -> Bool
+calcCond (Cond e1 Smaller e2)   | calc e1 < calc e2 = True
+                                | otherwise = False
+calcCond (Cond e1 Equal e2)     | calc e1 == calc e2 = True
+                                | otherwise = False
+calcCond (Cond e1 Greater e2)   | calc e1 > calc e2 = True
+                                | otherwise = False
+
+runFile :: FilePath ->  IO String
+runFile path = readFile path
 
 prettyP :: Prog -> String
 prettyP (Prog []) = ""
