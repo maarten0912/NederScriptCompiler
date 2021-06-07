@@ -41,7 +41,7 @@ identifier :: Parser String
 identifier = whitespace ((:) <$> lowerLetter <*> many (lowerLetter <|> dig))
 
 integer :: Parser Integer
-integer = read <$> whitespace (many dig)
+integer = whitespace (read <$> (some dig))
 
 symbol :: String -> Parser String
 symbol xs = whitespace (string xs)

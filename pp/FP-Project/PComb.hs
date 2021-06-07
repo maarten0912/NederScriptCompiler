@@ -45,7 +45,9 @@ instance Applicative Parser where
 
 instance Alternative Parser where
     empty = P (\x -> [])
-    p1 <|> p2 = P (\x -> if (length (par1 x)) > 0 then par1 x else par2 x)
+    p1 <|> p2 = P func
         where
-            par1 = runParser p1
-            par2 = runParser p2
+            func x = if (length (par1)) > 0 then par1 else par2
+                where
+                    par1 = runParser p1 x
+                    par2 = runParser p2 x
