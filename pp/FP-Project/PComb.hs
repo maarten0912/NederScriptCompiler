@@ -61,7 +61,8 @@ instance Applicative Parser where
                             | (r1, s1) <- runParser p1 s,
                               (r2, s2) <- runParser p2 s1 ])
 
-appApplicative = runParser ((,) <$> (char 'a') <*> (char 'b')) (Stream "ab")
+-- Example of applicative
+appEx = runParser ((,) <$> (char 'a') <*> (char 'b')) (Stream "ab")
 
 -- FP1.6
 instance Alternative Parser where
@@ -73,4 +74,5 @@ instance Alternative Parser where
                     par1 = runParser p1 x
                     par2 = runParser p2 x
 
-appAlternative = runParser ((char 'a') <|> (char 'b')) (Stream "b")
+-- Example of alternative
+altEx = runParser ((char 'a') <|> (char 'b')) (Stream "b")

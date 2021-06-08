@@ -35,7 +35,8 @@ data Cond = Cond Expr Comp Expr
 data Comp = Smaller | Equal | Greater
     deriving (Show, Eq)
 
-appEDSL = Prog [Func
+-- Example of EDSL
+edslEx = Prog [Func
         "functionName"
         [Identifier "arg1", Identifier "arg2"]
         (IfElse 
@@ -112,7 +113,8 @@ eleven =
         Func "eleven" [] (Call "inc" [Integer 10])
     ]
 
-appFibonacci = fibonacci
+-- Example of fibonacci
+fibonacciEx = fibonacci
 
 -- FP3.3
 prettyP :: Prog -> String
@@ -149,7 +151,8 @@ instance Pretty Expr where
 instance Pretty Comp where
     pretty comp = putStr $ prettyC comp
 
-appPretty = pretty fibonacci
+-- Example of pretty
+prettyEx = pretty fibonacci
 
 -- FP3.4
 eval :: Prog -> String -> [Integer] -> Integer
@@ -206,7 +209,8 @@ calcCond p (Cond e1 Equal e2)       | calc p e1 == calc p e2 = True
 calcCond p (Cond e1 Greater e2)     | calc p e1 > calc p e2 = True
                                     | otherwise = False
 
-appEval = eval fib "fib" [10]
+-- Example of eval
+evalEx = eval fib "fib" [25]
 
 -- FP 4.1
 prog :: Parser Prog
@@ -239,13 +243,15 @@ comp :: Parser Comp
 comp = whitespace f
     where f = (\x -> Smaller) <$> (char '<') <|> (\x -> Equal) <$> (string "==") <|> (\x -> Greater) <$> (char '>')
 
-appParserProg = runParser prog (Stream "fib n := if (n < 3) then { 1 } else { fib (n-1) + fib (n-2) };")
+-- Example of prog parser
+progEx = runParser prog (Stream "fib n := if (n < 3) then { 1 } else { fib (n-1) + fib (n-2) };")
 
 -- FP4.2
 compile :: String -> Prog
 compile x = fst . head $ runParser prog (Stream x)
 
-appCompile = compile "fib n := if (n < 3) then { 1 } else { fib (n-1) + fib (n-2) };"
+-- Example of compile
+compileEx = compile "fib n := if (n < 3) then { 1 } else { fib (n-1) + fib (n-2) };"
 
 -- FP4.3
 runFile :: FilePath -> [Integer] -> IO Integer
@@ -256,8 +262,9 @@ getLastFunctionName :: Prog -> String
 getLastFunctionName (Prog fs) = funname
     where (Func funname as e) = last fs
 
+-- Example of runfile
 -- We give an empty list of arguments because the last function of "functions.txt" has no arguments
-appRunFile = runFile "functions.txt" []
+runfileEx = runFile "functions.txt" []
 
 return []
 check = $quickCheckAll
