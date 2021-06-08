@@ -34,6 +34,7 @@ char c = P p
       p (Stream (x: xs )) | c == x     = [(x , Stream xs )]
                           | otherwise  = []
 
+-- This function is to apply the char parser with the character '1'
 parserOne :: Stream -> [(Char, Stream)]
 parserOne = runParser (char '1')
 
@@ -46,6 +47,7 @@ failure = P p
     where
     p (Stream xs) = []
 
+-- This function is to apply the failure parser
 parserFailure :: Stream -> [(Char, Stream)]
 parserFailure = runParser failure
 
