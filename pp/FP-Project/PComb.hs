@@ -15,6 +15,7 @@ data Stream = Stream [Char]
 -- Example of stream
 streamEx = (Stream "abc") 
 
+-- Parser definition (given)
 data Parser a = P {
     runParser :: Stream -> [(a, Stream)]
 }
