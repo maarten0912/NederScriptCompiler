@@ -8,14 +8,23 @@ import Data.Char
 import Data.Monoid
 import Test.QuickCheck
 
--- Stream of Chars - can be extended with the location for error handling
+-- FP1.1
 data Stream = Stream [Char]
               deriving (Eq, Show)
+
+appStream = (Stream "abc") 
 
 data Parser a = P {
     runParser :: Stream -> [(a, Stream)]
 }
 
+-- FP1.2
+instance Functor Parser where
+    fmap f p = P (\x -> [(f r, s) | (r,s) <- runParser p x])
+
+appFunctor = runParser (ord <$> char 'a') (Stream "a")
+
+-- FP1.3
 char :: Char -> Parser Char
 char c = P p
       where
@@ -23,26 +32,32 @@ char c = P p
       p (Stream (x: xs )) | c == x     = [(x , Stream xs )]
                           | otherwise  = []
 
+appChar = runParser (char 'a') (Stream "a")
+
 parserOne :: Stream -> [(Char, Stream)]
 parserOne = runParser (char '1')
 
+-- FP1.4
 failure :: Parser a
 failure = P p
     where
     p (Stream xs) = []
 
+appFailure = runParser failure (Stream "useless")
+
 parserFailure :: Stream -> [(Char, Stream)]
 parserFailure = runParser failure
 
-instance Functor Parser where
-    fmap f p = P (\x -> [(f r, s) | (r,s) <- runParser p x])
-
+-- FP1.5
 instance Applicative Parser where
     pure p = P (\x -> [(p, x)])
     p1 <*> p2 = P (\s -> [ (r1 r2, s2)
                             | (r1, s1) <- runParser p1 s,
                               (r2, s2) <- runParser p2 s1 ])
 
+appApplicative = runParser ((,) <$> (char 'a') <*> (char 'b')) (Stream "ab")
+
+-- FP1.6
 instance Alternative Parser where
     empty = P (\x -> [])
     p1 <|> p2 = P func
@@ -51,3 +66,5 @@ instance Alternative Parser where
                 where
                     par1 = runParser p1 x
                     par2 = runParser p2 x
+
+appAlternative = runParser ((char 'a') <|> (char 'b')) (Stream "b")
