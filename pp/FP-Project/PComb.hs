@@ -12,7 +12,8 @@ import Test.QuickCheck
 data Stream = Stream [Char]
               deriving (Eq, Show)
 
-appStream = (Stream "abc") 
+-- Example of stream
+streamEx = (Stream "abc") 
 
 data Parser a = P {
     runParser :: Stream -> [(a, Stream)]
@@ -22,7 +23,8 @@ data Parser a = P {
 instance Functor Parser where
     fmap f p = P (\x -> [(f r, s) | (r,s) <- runParser p x])
 
-appFunctor = runParser (ord <$> char 'a') (Stream "a")
+-- Example of the functor
+functorEx = runParser (ord <$> char 'a') (Stream "a")
 
 -- FP1.3
 char :: Char -> Parser Char
@@ -31,8 +33,6 @@ char c = P p
       p (Stream [])                    = []
       p (Stream (x: xs )) | c == x     = [(x , Stream xs )]
                           | otherwise  = []
-
-appChar = runParser (char 'a') (Stream "a")
 
 parserOne :: Stream -> [(Char, Stream)]
 parserOne = runParser (char '1')
@@ -46,13 +46,11 @@ failure = P p
     where
     p (Stream xs) = []
 
-appFailure = runParser failure (Stream "useless")
-
 parserFailure :: Stream -> [(Char, Stream)]
 parserFailure = runParser failure
 
 -- Example for failure
-failEx = runParser failure (Stream "")
+failEx = runParser failure (Stream "test")
 
 -- FP1.5
 instance Applicative Parser where

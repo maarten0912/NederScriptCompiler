@@ -10,7 +10,7 @@ import Test.QuickCheck
 import PComb
 
 
---FP2.1
+-- FP2.1
 letter :: Parser Char
 letter =  foldr (<|>) (char 'a') (char <$> (['b'..'z'] ++ ['A' .. 'Z']))
 
@@ -21,7 +21,7 @@ dig =  foldr (<|>) (char '0') (char <$> ['1'..'9'])
 letterEx = runParser letter $ Stream "a"
 digEx = runParser dig $ Stream "1"
 
---FP2.2
+-- FP2.2
 between :: Parser a -> Parser b -> Parser c -> Parser b
 between p1 p2 p3 = (p1 *> p2) <* p3
 
@@ -32,7 +32,7 @@ whitespace p1 = between (many (char ' ' <|> char '\n' <|> char '\t')) p1 (many (
 betweenEx = runParser (between dig letter dig) $ Stream "1a1"
 whiteEx = runParser (whitespace letter) $ Stream "    a  a  "
 
---FP2.3
+-- FP2.3
 sep1 :: Parser a -> Parser b -> Parser [a]
 sep1 p1 s = (:) <$> p1 <*> many (s *> p1)
 
@@ -47,7 +47,7 @@ sep1Ex = runParser (sep1 letter (char ',')) $ Stream "a,b,c,d"
 sepEx = runParser (sep letter (char ',')) $ Stream ","
 optionEx = runParser (option 'a' letter) $ Stream "123"
 
---FP2.4
+-- FP2.4
 string :: String -> Parser String
 string [] = pure ""
 string (x:xs) = (:) <$> char x <*> string xs
