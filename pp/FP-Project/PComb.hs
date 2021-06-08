@@ -37,6 +37,9 @@ appChar = runParser (char 'a') (Stream "a")
 parserOne :: Stream -> [(Char, Stream)]
 parserOne = runParser (char '1')
 
+-- Example for char
+charEx = runParser (char 'a') (Stream "a")
+
 -- FP1.4
 failure :: Parser a
 failure = P p
@@ -47,6 +50,9 @@ appFailure = runParser failure (Stream "useless")
 
 parserFailure :: Stream -> [(Char, Stream)]
 parserFailure = runParser failure
+
+-- Example for failure
+failEx = runParser failure (Stream "")
 
 -- FP1.5
 instance Applicative Parser where
