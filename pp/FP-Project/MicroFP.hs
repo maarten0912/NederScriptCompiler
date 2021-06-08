@@ -34,43 +34,47 @@ data Cond = Cond Expr Comp Expr
 data Comp = Smaller | Equal | Greater
     deriving (Show, Eq)
 
--- fib n := if (n < 3) then { 1 } else { fib (n-1) + fib (n-2)};
-
 prog :: Parser Prog
-prog = Prog <$> (some func)
+prog = whitespace f
+    where f = Prog <$> (some func)
 
 func :: Parser Func
-func = Func <$> identifier <*> (many (Integer <$> integer <|> Identifier <$> identifier)) <* (symbol ":=") <*> expr <* (symbol ";")
+func = whitespace f
+    where f = Func <$> identifier <*> (many (Integer <$> integer <|> Identifier <$> identifier)) <* (symbol ":=") <*> expr <* (symbol ";")
+
 
 expr :: Parser Expr
-expr = Add <$> term <* (symbol "+") <*> expr
-    <|> Sub <$> term <* (symbol "-") <*> expr
-    <|> term
+expr = whitespace f
+    where f = Add <$> term <* (symbol "+") <*> expr
+            <|> Sub <$> term <* (symbol "-") <*> expr
+            <|> term
 
 term :: Parser Expr
-term = Mult <$> factor <* (symbol "*") <*> term <|> factor
+term = whitespace f
+    where f = Mult <$> factor <* (symbol "*") <*> term <|> factor
 
 factor :: Parser Expr
-factor = Call <$> identifier <*> (parens (sep1 expr (char ',')))
-    <|> IfElse <$> ((symbol "if") *> (parens (Cond <$> expr <*> comp <*> expr))) <* (symbol "then") <*> (braces expr) <* (symbol "else") <*> (braces expr)
-    <|> Parens <$> parens expr
-    <|> Identifier <$> identifier
-    <|> Integer <$> integer
+factor = whitespace f
+    where f = Call <$> identifier <*> (parens (sep1 expr (char ',')))
+            <|> IfElse <$> ((symbol "if") *> (parens (Cond <$> expr <*> comp <*> expr))) <* (symbol "then") <*> (braces expr) <* (symbol "else") <*> (braces expr)
+            <|> Parens <$> parens expr
+            <|> Identifier <$> identifier
+            <|> Integer <$> integer
 
 comp :: Parser Comp
-comp = (\x -> Smaller) <$> (char '<') <|> (\x -> Equal) <$> (string "==") <|> (\x -> Greater) <$> (char '>')
+comp = whitespace f
+    where f = (\x -> Smaller) <$> (char '<') <|> (\x -> Equal) <$> (string "==") <|> (\x -> Greater) <$> (char '>')
 
 compile :: String -> Prog
 compile x = fst . head $ runParser prog (Stream x)
 
 eval :: Prog -> String -> [Integer] -> Integer
-eval (Prog []) fun args = error ("No function with the name \"" ++ fun ++ "\" found")
-eval (Prog ((Func funname as e):fs)) fun args | funname == fun = calc (bind as args e)
-                                              | otherwise = eval (Prog fs) fun args
+eval (Prog fs) fun args = calc (Prog fs) (bind as args e)
+    where (Func funname as e) = head (filter (\(Func funname as e) -> funname == fun) fs)
 
---     funargs    values    expression  bound expression
 bind :: [Expr] -> [Integer] -> Expr -> Expr
-bind [] [] e = e
+bind [] _ e = e
+bind _ [] e = e
 bind (fa:funargs) (v:values) expression = bind funargs values (replace expression fa v )
 
 replace :: Expr -> Expr -> Integer -> Expr
@@ -78,7 +82,7 @@ replace (Add x y) fa v = Add (replace x fa v) (replace y fa v)
 replace (Sub x y) fa v = Sub (replace x fa v) (replace y fa v)
 replace (Mult x y) fa v = Mult (replace x fa v) (replace y fa v)
 replace (Parens x) fa v = replace x fa v
-replace (IfElse c x y) fa v = IfElse c (replace x fa v) (replace y fa v)
+replace (IfElse (Cond a c b) x y) fa v = IfElse (Cond (replace a fa v) c (replace b fa v)) (replace x fa v) (replace y fa v)
 replace (Call s []) fa v = Call s []
 replace (Call s es) fa v = Call s (replaceArray es fa v)
 replace e fa v | e == fa = (Integer v)
@@ -88,29 +92,35 @@ replaceArray :: [Expr] -> Expr -> Integer -> [Expr]
 replaceArray [] _ _ = []
 replaceArray (e:es) fa v = (replace e fa v) : (replaceArray es fa v)
 
-calc :: Expr -> Integer
-calc (Mult x y)     = calc x * calc y
-calc (Sub x y)      = calc x - calc y
-calc (Add x y)      = calc x + calc y
-calc (Parens x)     = calc x
-calc (Integer x)    = x
-calc e              = calc (reduce e)
+calc :: Prog -> Expr -> Integer
+calc p (Call s args)  = eval p s [a | arg <- args, let a = calc p arg]
+calc p (Mult x y)     = calc p x * calc p y
+calc p (Sub x y)      = calc p x - calc p y
+calc p (Add x y)      = calc p x + calc p y
+calc p (Parens x)     = calc p x
+calc p (Integer x)    = x
+calc p (Identifier x) = error ("Did not get enough arguments, no value for argument '" ++ x ++ "' found.")
+calc p e              = calc p (reduce p e)
 
-reduce :: Expr -> Expr
-reduce (IfElse c x y)   | calcCond c == True = x
-                        | otherwise = y
-reduce e                = e
+reduce :: Prog -> Expr -> Expr
+reduce p (IfElse c x y)   | calcCond p c == True = x
+                          | otherwise = y
+reduce p e                = e
 
-calcCond :: Cond -> Bool
-calcCond (Cond e1 Smaller e2)   | calc e1 < calc e2 = True
-                                | otherwise = False
-calcCond (Cond e1 Equal e2)     | calc e1 == calc e2 = True
-                                | otherwise = False
-calcCond (Cond e1 Greater e2)   | calc e1 > calc e2 = True
-                                | otherwise = False
+calcCond :: Prog -> Cond -> Bool
+calcCond p (Cond e1 Smaller e2)     | calc p e1 < calc p e2 = True
+                                    | otherwise = False
+calcCond p (Cond e1 Equal e2)       | calc p e1 == calc p e2 = True
+                                    | otherwise = False
+calcCond p (Cond e1 Greater e2)     | calc p e1 > calc p e2 = True
+                                    | otherwise = False
 
-runFile :: FilePath ->  IO String
-runFile path = readFile path
+runFile :: FilePath -> [Integer] -> IO Integer
+runFile path args =  (\x -> eval x (getLastFunctionName x) args) <$> (compile <$> readFile path)
+
+getLastFunctionName :: Prog -> String
+getLastFunctionName (Prog fs) = funname
+    where (Func funname as e) = last fs
 
 prettyP :: Prog -> String
 prettyP (Prog []) = ""
