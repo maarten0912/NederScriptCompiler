@@ -1,0 +1,30 @@
+integer
+boolean
+array
+strings
+enum (optional)
+pointer (optional)
+objects (optional)
+
+memory management
+
+denotation of values (array is [1,2,3])
+operator for eq and ineq
+
+type variables
+local nested scopes (nieuwe variable zelfde naam )
+variables checked for init
+
+assigning values
+if else
+while
+
+concurrency
+
+division (optional)
+
+functions (optional)
+
+exception handling (optional)
+
+optimisations (optional)
