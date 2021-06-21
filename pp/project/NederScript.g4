@@ -17,7 +17,7 @@ statement: ifelse   #ifElseStat
          | forS     #forStat
          | assign   #assignStat
          | decl     #declStat
-         | return   #returnStat
+         | returnS  #returnStat
          | print    #printStat
          | funCall  #functionCallStat
          ;
@@ -42,7 +42,7 @@ decl: (PUBLIC)? type VAR                    #nonTypedDecl
     ;
 
 /** Return statement **/
-return: RETURN expr;
+returnS: RETURN expr;
 
 /** Print statement **/
 print: PRINT LPAR expr RPAR;
