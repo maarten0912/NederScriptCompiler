@@ -1,4 +1,4 @@
-grammar Grammar;
+grammar NederScript;
 
 /** Outer most nonterminal **/
 program: function+;
@@ -13,8 +13,8 @@ instruction: statement SEMI             #normalInst
 
 /** Statement **/
 statement: ifelse   #ifElseStat
-         | while    #whileStat
-         | for      #forStat
+         | whileS   #whileStat
+         | forS     #forStat
          | assign   #assignStat
          | decl     #declStat
          | return   #returnStat
@@ -26,10 +26,10 @@ statement: ifelse   #ifElseStat
 ifelse: IF LPAR (expr | funCall) RPAR LBRACE statement+ RBRACE (ELSE LBRACE statement+ RBRACE)?;
 
 /** While loops **/
-while: WHILE LPAR expr RPAR LBRACE statement+ RBRACE;
+whileS: WHILE LPAR expr RPAR LBRACE statement+ RBRACE;
 
 /** For loops **/
-for: FOR LPAR expr SEMI expr SEMI expr RPAR LBRACE statement+ RBRACE    #forNormal
+forS: FOR LPAR expr SEMI expr SEMI expr RPAR LBRACE statement+ RBRACE   #forNormal
    | FOR LPAR VAR IN expr RPAR LBRACE statement+ RBRACE                 #forIn
    ;
 
@@ -37,8 +37,9 @@ for: FOR LPAR expr SEMI expr SEMI expr RPAR LBRACE statement+ RBRACE    #forNorm
 assign: VAR EQ expr;
 
 /** Declaration **/
-decl: type VAR
-    | type VAR EQ primitive;
+decl: (PUBLIC)? type VAR                    #nonTypedDecl
+    | (PUBLIC)? type VAR EQ primitive       #typedDecl
+    ;
 
 /** Return statement **/
 return: RETURN expr;
@@ -50,14 +51,14 @@ print: PRINT LPAR expr RPAR;
 funCall: VAR LPAR (expr | primitive) (COMMA (expr | primitive))* RPAR;
 
 /** Primitive values **/
-primitive: QUOTE .*? QUOTE  #stringPrimitive
-         | LBRACK primitive (COMMA primitive)* RBRACK #arrayPrimitive
-         | NUM  #integerPrimitive
-         | (TRUE | FALSE) #booleanPrimitive
+primitive: QUOTE .*? QUOTE                              #stringPrimitive
+         | LBRACK primitive (COMMA primitive)* RBRACK   #arrayPrimitive
+         | NUM                                          #integerPrimitive
+         | (TRUE | FALSE)                               #booleanPrimitive
          ;
 
 /** Type **/
-type: INTEGER | BOOLEAN | ARRAY | STRING;
+type: INTEGER | BOOLEAN | ARRAY | STRING | THREAD;
 
 /** Expressions **/
 expr: prefixOp expr     #prefixExpr
@@ -85,7 +86,6 @@ boolOp: AND | OR;
 
 /** Comparison operator. */
 compOp: LE | LT | GE | GT | EQ | NE;
-
 
 /** Code structure tokens **/
 LPAR: '(';
@@ -125,12 +125,14 @@ FALSE: 'onwaar';
 FUN: 'functie';
 RETURN: 'geefterug';
 PRINT: 'afdrukken';
+PUBLIC: 'public';
 
 /** Types **/
 INTEGER: 'Getal';
 BOOLEAN: 'Booleaans';
 ARRAY: 'Reeks';
-STRING: 'Draad';
+STRING: 'Touw';
+THREAD: 'Draad';
 
 /** Fragments for use below **/
 fragment DIGIT0: [0-9];
