@@ -1,7 +1,8 @@
 package pp.project;
 
-public enum NSType {
+public enum NederScriptTypeKind {
     GETAL,
+    KARAKTER,
     BOOLEAANS,
     TOUW,
     REEKS,

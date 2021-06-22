@@ -1,38 +1,43 @@
 package pp.project;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.*;
-import pp.block3.cc.antlr.Type;
-import pp.block4.cc.cfg.Node;
-import pp.project.exceptions.NoTypeException;
-import pp.project.exceptions.TypeMisMatchException;
-import pp.project.exceptions.VariableNotExistsException;
 
-import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NederScriptChecker extends NederScriptBaseListener {
 
-    SymbolTable st = new MySymbolTable();
-    private ParseTreeProperty<NSType> types = new ParseTreeProperty<>();
-    private Stack<Exception> errorStack = new Stack<>();
-
-
+    private List<String> errors;
     private NederScriptResult result;
-    private NederScriptScope scope;
+    private SymbolTable st;
 
-    public NederScriptResult check(ParseTree tree) {
-        this.scope = new NederScriptScope();
+    public NederScriptResult check(ParseTree tree) throws ParseException {
         this.result = new NederScriptResult();
+        this.errors = new ArrayList<>();
+        this.st = new ScopeTable();
         new ParseTreeWalker().walk(this, tree);
-        //throw errors
+        if (hasErrors()) {
+            throw new ParseException(getErrors());
+        }
         return this.result;
     }
 
+    /** Indicates if any errors were encountered in this tree listener. */
+    public boolean hasErrors() {
+        return !getErrors().isEmpty();
+    }
+
+    /** Returns the list of errors collected in this tree listener. */
+    public List<String> getErrors() {
+        return this.errors;
+    }
 
     @Override
-    public void enterFunction(NederScriptParser.FunctionContext ctx) {
-        st.openScope();
-    }
+    public void enterFunction(NederScriptParser.FunctionContext ctx) { st.openScope(); }
 
     @Override
     public void exitFunction(NederScriptParser.FunctionContext ctx) {
@@ -49,91 +54,151 @@ public class NederScriptChecker extends NederScriptBaseListener {
         st.closeScope();
     }
 
-    @Override
-    public void enterAssign(NederScriptParser.AssignContext ctx) {
-        if (!st.contains(ctx.VAR().toString())) {
-            errorStack.add(new VariableNotExistsException("Variable '" + ctx.VAR().toString() + "' does not exists in the current scope"));
-        }
 
+    @Override
+    public void exitPrefixExpr(NederScriptParser.PrefixExprContext ctx) {
+        super.exitPrefixExpr(ctx);
     }
 
     @Override
-    public void enterNonTypedDecl(NederScriptParser.NonTypedDeclContext ctx) {
-        NSType type = null;
-        if (ctx.type().INTEGER() != null) {
-            type = NSType.GETAL;
-        } else if (ctx.type().BOOLEAN() != null) {
-            type = NSType.BOOLEAANS;
-        } else if (ctx.type().STRING() != null) {
-            type = NSType.TOUW;
-        } else if (ctx.type().ARRAY() != null) {
-            type = NSType.REEKS;
-        } else if (ctx.type().THREAD() != null) {
-            type = NSType.DRAAD;
-        }
-        if (type == null) {
-             errorStack.add(new NoTypeException(ctx.type().toString() + " type was not recognized"));
-        }
-        st.add(ctx.VAR().toString());
+    public void exitParExpr(NederScriptParser.ParExprContext ctx) {
+        super.exitParExpr(ctx);
     }
 
     @Override
-    public void enterTypedDecl(NederScriptParser.TypedDeclContext ctx) {
-        NSType expectedType = null;
-        if (ctx.type().INTEGER() != null) {
-            expectedType = NSType.GETAL;
-        } else if (ctx.type().BOOLEAN() != null) {
-            expectedType = NSType.BOOLEAANS;
-        } else if (ctx.type().STRING() != null) {
-            expectedType = NSType.TOUW;
-        } else if (ctx.type().ARRAY() != null) {
-            expectedType = NSType.REEKS;
-        } else if (ctx.type().THREAD() != null) {
-            expectedType = NSType.DRAAD;
+    public void exitFunCallExpr(NederScriptParser.FunCallExprContext ctx) {
+        super.exitFunCallExpr(ctx);
+    }
+
+    @Override
+    public void exitCompExpr(NederScriptParser.CompExprContext ctx) {
+        super.exitCompExpr(ctx);
+    }
+
+    @Override
+    public void exitPrimitiveExpr(NederScriptParser.PrimitiveExprContext ctx) {
+        setType(ctx, getType(ctx.primitive()));
+    }
+
+    @Override
+    public void exitBoolExpr(NederScriptParser.BoolExprContext ctx) {
+        checkType(ctx.expr(0), NederScriptType.BOOLEAANS);
+        checkType(ctx.expr(1), NederScriptType.BOOLEAANS);
+        setType(ctx, NederScriptType.BOOLEAANS);
+    }
+
+    @Override
+    public void exitMultExpr(NederScriptParser.MultExprContext ctx) {
+        super.exitMultExpr(ctx);
+    }
+
+    @Override
+    public void exitPlusExpr(NederScriptParser.PlusExprContext ctx) {
+        super.exitPlusExpr(ctx);
+    }
+
+    @Override
+    public void exitVarExpr(NederScriptParser.VarExprContext ctx) {
+        super.exitVarExpr(ctx);
+    }
+
+    @Override
+    public void exitStringPrimitive(NederScriptParser.StringPrimitiveContext ctx) {
+        int length = ctx.STR().toString().length() - 2;
+        setType(ctx, new NederScriptType.Touw(length));
+    }
+
+    @Override
+    public void exitCharacterPrimitive(NederScriptParser.CharacterPrimitiveContext ctx) {
+        setType(ctx, NederScriptType.KARAKTER);
+    }
+
+    @Override
+    public void exitArrayPrimitive(NederScriptParser.ArrayPrimitiveContext ctx) {
+        int arrayLength = ctx.primitive().size();
+        NederScriptType type = getType(ctx.primitive(0));
+        for (int i = 0; i < ctx.primitive().size(); i++) {
+            NederScriptType curType = getType(ctx.primitive(i));
+            if (!type.equals(curType)) {
+                addError(ctx,"Not all elements in Reeks have the same type");
+            }
         }
-        if (expectedType == null) {
-            errorStack.add(new NoTypeException(ctx.type().toString() + " type was not recognized"));
-        }
-        NSType actualType = type(ctx.primitive());
-        if (expectedType.equals(actualType)) {
-            set(ctx, actualType);
-        } else {
-            errorStack.add(new TypeMisMatchException("Expected type '" + expectedType + "' but got '" + actualType + "'"));
-        }
+        setType(ctx, new NederScriptType.Reeks(arrayLength, type));
     }
 
     @Override
-    public void enterStringPrimitive(NederScriptParser.StringPrimitiveContext ctx) {
-        set(ctx, NSType.TOUW);
+    public void exitIntegerPrimitive(NederScriptParser.IntegerPrimitiveContext ctx) {
+        setType(ctx, NederScriptType.GETAL);
     }
 
     @Override
-    public void enterArrayPrimitive(NederScriptParser.ArrayPrimitiveContext ctx) {
-        set(ctx, NSType.REEKS);
-    }
-
-    @Override
-    public void enterIntegerPrimitive(NederScriptParser.IntegerPrimitiveContext ctx) {
-        set(ctx, NSType.GETAL);
-    }
-
-    @Override
-    public void enterBooleanPrimitive(NederScriptParser.BooleanPrimitiveContext ctx) {
-        set(ctx, NSType.BOOLEAANS);
+    public void exitBooleanPrimitive(NederScriptParser.BooleanPrimitiveContext ctx) {
+        setType(ctx, NederScriptType.BOOLEAANS);
     }
 
     @Override
     public void visitErrorNode(ErrorNode node) {
-        super.visitErrorNode(node);
+        addError(node.getSymbol(), "Parser exception");
     }
 
-    /** Sets the type attribute of a given node. */
-    private void set(ParseTree node, NSType type) {
-        this.types.put(node, type);
+    /** Records an error at a given parse tree node.
+     * @param node the parse tree node at which the error occurred
+     * @param message the error message
+     * @param args arguments for the message, see {@link String#format}
+     */
+    private void addError(ParserRuleContext node, String message,
+                          Object... args) {
+        addError(node.getStart(), message, args);
     }
 
-    /** Retrieves the type of a given node. */
-    public NSType type(ParseTree node) {
-        return this.types.get(node);
+    /** Records an error at a given token.
+     * @param token the token at which the error occurred
+     * @param message the error message
+     * @param args arguments for the message, see {@link String#format}
+     */
+    private void addError(Token token, String message, Object... args) {
+        int line = token.getLine();
+        int column = token.getCharPositionInLine();
+        message = String.format(message, args);
+        message = String.format("Line %d:%d - %s", line, column, message);
+        this.errors.add(message);
+    }
+
+    /** Convenience method to add a type to the result. */
+    private void setType(ParseTree node, NederScriptType type) {
+        this.result.setType(node, type);
+    }
+
+    /** Returns the type of a given expression or type node. */
+    private NederScriptType getType(ParseTree node) {
+        return this.result.getType(node);
+    }
+
+    /** Checks the inferred type of a given parse tree,
+     * and adds an error if it does not correspond to the expected type.
+     */
+    private void checkType(ParserRuleContext node, NederScriptType expected) {
+        NederScriptType actual = getType(node);
+        if (actual == null) {
+            addError(node, "Missing inferred type");
+            return;
+        }
+        if (!actual.equals(expected)) {
+            addError(node, "Expected type '%s' but found '%s'", expected,
+                    actual);
+        }
+    }
+
+    /** Convenience method to add a flow graph entry to the result. */
+    private void setEntry(ParseTree node, ParserRuleContext entry) {
+        if (entry == null) {
+            throw new IllegalArgumentException("Null flow graph entry");
+        }
+        this.result.setEntry(node, entry);
+    }
+
+    /** Returns the flow graph entry of a given expression or statement. */
+    private ParserRuleContext getEntry(ParseTree node) {
+        return this.result.getEntry(node);
     }
 }

@@ -7,15 +7,15 @@ program: function+;
 function: FUN VAR LPAR (type VAR (COMMA type VAR)*)? RPAR (COLON type)? LBRACE instruction+ RBRACE;
 
 /** Instruction **/
-instruction: statement SEMI             #normalInst
-           | LBRACE statement+ RBRACE   #newScopeInst
+instruction: statement SEMI                     #normalInst
+           | ifelse                             #ifelseInst
+           | whileS                             #whileInst
+           | forS                               #forInst
+           | LBRACE (statement SEMI)+ RBRACE    #newScopeInst
            ;
 
 /** Statement **/
-statement: ifelse   #ifElseStat
-         | whileS   #whileStat
-         | forS     #forStat
-         | assign   #assignStat
+statement: assign   #assignStat
          | decl     #declStat
          | returnS  #returnStat
          | print    #printStat
@@ -23,22 +23,22 @@ statement: ifelse   #ifElseStat
          ;
 
 /** If Else **/
-ifelse: IF LPAR (expr | funCall) RPAR LBRACE statement+ RBRACE (ELSE LBRACE statement+ RBRACE)?;
+ifelse: IF LPAR (expr | funCall) RPAR LBRACE instruction+ RBRACE (ELSE LBRACE instruction+ RBRACE)?;
 
 /** While loops **/
-whileS: WHILE LPAR expr RPAR LBRACE statement+ RBRACE;
+whileS: WHILE LPAR expr RPAR LBRACE instruction+ RBRACE;
 
 /** For loops **/
-forS: FOR LPAR expr SEMI expr SEMI expr RPAR LBRACE statement+ RBRACE   #forNormal
-   | FOR LPAR VAR IN expr RPAR LBRACE statement+ RBRACE                 #forIn
+forS: FOR LPAR statement SEMI expr SEMI statement RPAR LBRACE instruction+ RBRACE   #forNormal
+   | FOR LPAR type VAR IN expr RPAR LBRACE instruction+ RBRACE            #forIn
    ;
 
 /** Assignment **/
-assign: VAR EQ expr;
+assign: VAR (LBRACK (NUM|VAR) RBRACK)* ASS expr;
 
 /** Declaration **/
-decl: (PUBLIC)? type VAR                    #nonTypedDecl
-    | (PUBLIC)? type VAR EQ primitive       #typedDecl
+decl: (PUBLIC)? type VAR                            #nonTypedDecl
+    | (PUBLIC)? type VAR ASS (primitive | funCall)  #typedDecl
     ;
 
 /** Return statement **/
@@ -51,7 +51,8 @@ print: PRINT LPAR expr RPAR;
 funCall: VAR LPAR (expr | primitive) (COMMA (expr | primitive))* RPAR;
 
 /** Primitive values **/
-primitive: QUOTE .*? QUOTE                              #stringPrimitive
+primitive: STR                                          #stringPrimitive
+         | CHR                                          #characterPrimitive
          | LBRACK primitive (COMMA primitive)* RBRACK   #arrayPrimitive
          | NUM                                          #integerPrimitive
          | (TRUE | FALSE)                               #booleanPrimitive
@@ -61,15 +62,15 @@ primitive: QUOTE .*? QUOTE                              #stringPrimitive
 type: INTEGER | BOOLEAN | ARRAY | STRING | THREAD;
 
 /** Expressions **/
-expr: prefixOp expr     #prefixExpr
-    | expr multOp expr  #multExpr
-    | expr plusOp expr  #plusExpr
-    | expr compOp expr  #compExpr
-    | expr boolOp expr  #boolExpr
-    | LPAR expr RPAR    #parExpr
-    | funCall           #funCallExpr
-    | primitive         #primitiveExpr
-    | VAR               #idExpr
+    expr: prefixOp expr                #prefixExpr
+    | expr multOp expr                 #multExpr
+    | expr plusOp expr                 #plusExpr
+    | expr compOp expr                 #compExpr
+    | expr boolOp expr                 #boolExpr
+    | LPAR expr RPAR                   #parExpr
+    | funCall                          #funCallExpr
+    | primitive                        #primitiveExpr
+    | VAR (LBRACK (VAR|NUM) RBRACK)*   #varExpr
     ;
 
 /** Prefix operator. */
@@ -112,6 +113,7 @@ LT: '<';
 GE: '>=';
 GT: '>';
 EQ: '==';
+ASS: '=';
 NE: '!=';
 
 /** Keywords tokens **/
@@ -125,7 +127,7 @@ FALSE: 'onwaar';
 FUN: 'functie';
 RETURN: 'geefterug';
 PRINT: 'afdrukken';
-PUBLIC: 'public';
+PUBLIC: 'publiek';
 
 /** Types **/
 INTEGER: 'Getal';
@@ -141,6 +143,8 @@ fragment LETTER: [a-zA-Z];
 fragment NUMBER: DIGIT+;
 
 /** Variables **/
-VAR: LETTER (LETTER | DIGIT0)*;
-NUM: DIGIT (DIGIT0)*;
+VAR: LETTER (LETTER | DIGIT0 | '-' | '_')*;
+NUM: (DIGIT (DIGIT0)* | DIGIT0);
+STR: QUOTE .*? QUOTE;
+CHR: SQUOTE (LETTER | DIGIT0) SQUOTE;
 WS: [ \t\r\n]+ -> skip;

@@ -4,16 +4,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
-public class MySymbolTable implements SymbolTable {
-    private final Stack<Set<String>> stack = new Stack<>();
+public class ScopeTable implements SymbolTable {
+    private final Stack<NederScriptScope> stack = new Stack<>();
 
-    public MySymbolTable() {
+    public ScopeTable() {
         openScope();
     }
 
     @Override
     public void openScope() {
-        stack.push(new HashSet<>());
+        stack.push(new NederScriptScope());
     }
 
     @Override
@@ -25,13 +25,13 @@ public class MySymbolTable implements SymbolTable {
     }
 
     @Override
-    public boolean add(String id) {
-        return stack.peek().add(id);
+    public boolean add(String id, NederScriptType type) {
+        return stack.peek().put(id, type);
     }
 
     @Override
     public boolean contains(String id) {
-        for (Set<String> s : stack) {
+        for (NederScriptScope s : stack) {
             if (s.contains(id)) return true;
         }
         return false;
