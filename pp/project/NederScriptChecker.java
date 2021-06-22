@@ -1,10 +1,7 @@
 package pp.project;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.*;
 import pp.block3.cc.antlr.Type;
 import pp.block4.cc.cfg.Node;
 import pp.project.exceptions.NoTypeException;
@@ -13,11 +10,23 @@ import pp.project.exceptions.VariableNotExistsException;
 
 import java.util.Stack;
 
-public class MyNederScriptListener extends NederScriptBaseListener {
+public class NederScriptChecker extends NederScriptBaseListener {
 
     SymbolTable st = new MySymbolTable();
     private ParseTreeProperty<NSType> types = new ParseTreeProperty<>();
     private Stack<Exception> errorStack = new Stack<>();
+
+
+    private NederScriptResult result;
+    private NederScriptScope scope;
+
+    public NederScriptResult check(ParseTree tree) {
+        this.scope = new NederScriptScope();
+        this.result = new NederScriptResult();
+        new ParseTreeWalker().walk(this, tree);
+        //throw errors
+        return this.result;
+    }
 
 
     @Override
