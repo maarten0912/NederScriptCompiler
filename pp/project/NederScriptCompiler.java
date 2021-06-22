@@ -11,6 +11,29 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 public class NederScriptCompiler {
 
+    private final static NederScriptCompiler instance = new NederScriptCompiler();
+
+    public static NederScriptCompiler instance() {
+        return instance;
+    }
+
+    private final NederScriptChecker checker;
+
+    private NederScriptCompiler() {
+        this.checker = new NederScriptChecker();
+    }
+
+    public NederScriptResult check(String text) throws ParseException {
+        return check(parse(text));
+    }
+
+    public NederScriptResult check(File file) throws IOException, ParseException {
+        return check(parse(file));
+    }
+
+    public NederScriptResult check(ParseTree tree) throws ParseException {
+        return this.checker.check(tree);
+    }
 
 
     public ParseTree parse (String text) {

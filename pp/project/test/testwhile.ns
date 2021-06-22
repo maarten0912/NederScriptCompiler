@@ -1,0 +1,19 @@
+functie hoofd() {
+
+    Reeks things = ["abcd","0123"];
+
+    Getal i = 0;
+
+    terwijl (i < lengte(things)) {
+
+        Getal y = 0;
+
+        terwijl (y < lengte(things[i])) {
+
+            print(things[i][y]);
+            y = y + 1;
+        }
+
+        i = i + 1;
+    }
+}

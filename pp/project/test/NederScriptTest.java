@@ -1,5 +1,9 @@
 package pp.project.test;
 
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import pp.project.*;
@@ -32,14 +36,24 @@ public class NederScriptTest {
 
     @Test
     public void testSyntax() {
-        test("functie toevoeging (Getal a, Getal b) : Getal {\n" +
-                "    geefterug a + b;\n" +
-                "}");
+
+        try {
+
+            checkSucces("test1.ns");
+            checkFail("test1wrong.ns");
+
+            checkSucces("test2.ns");
+            checkSucces("testfor.ns");
+            checkSucces("testwhile.ns");
+            checkSucces("testifelse.ns");
+
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test
     public void testContext() {
-
     }
 
     @Test
@@ -71,8 +85,12 @@ public class NederScriptTest {
         return this.compiler.parse(new File("pp/project/test/" + filename));
     }
 
-    private ParseTree parseNS(String text) {
+    private ParseTree parse (File file) throws IOException {
+        return this.compiler.parse(file);
+    }
 
+    private NederScriptResult check(ParseTree tree) throws ParseException {
+        return this.compiler.check(tree);
     }
 
 }

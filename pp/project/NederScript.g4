@@ -48,7 +48,7 @@ returnS: RETURN expr;
 print: PRINT LPAR expr RPAR;
 
 /** Function call **/
-funCall: VAR LPAR (expr | primitive) (COMMA (expr | primitive))* RPAR;
+funCall: VAR LPAR ((expr | primitive) (COMMA (expr | primitive))*)? RPAR;
 
 /** Primitive values **/
 primitive: STR                                          #stringPrimitive
@@ -59,7 +59,7 @@ primitive: STR                                          #stringPrimitive
          ;
 
 /** Type **/
-type: INTEGER | BOOLEAN | ARRAY | STRING | THREAD;
+type: INTEGER | BOOLEAN | CHARACTER | ARRAY | STRING | THREAD;
 
 /** Expressions **/
     expr: prefixOp expr                #prefixExpr
@@ -97,7 +97,8 @@ LBRACK: '[';
 RBRACK: ']';
 COLON: ':';
 SEMI: ';';
-QUOTE: '"' | '\'';
+QUOTE: '"';
+SQUOTE: '\'';
 COMMA: ',';
 
 /** Expression tokens **/
@@ -135,6 +136,7 @@ BOOLEAN: 'Booleaans';
 ARRAY: 'Reeks';
 STRING: 'Touw';
 THREAD: 'Draad';
+CHARACTER: 'Karakter';
 
 /** Fragments for use below **/
 fragment DIGIT0: [0-9];

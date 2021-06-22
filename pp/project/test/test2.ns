@@ -1,0 +1,33 @@
+functie som(Reeks a) : Getal {
+
+
+    Getal tijdelijke_som = 0;
+    Booleaans a = onwaar;
+    voor (Getal i = 0; i < lengte(a); i = i + 1) {
+        tijdelijke_som = tijdelijke_som + a[i];
+    }
+
+    geefterug tijdelijke_som;
+}
+
+functie toevoeging (Getal a, Getal b) : Getal {
+    geefterug a + b;
+}
+
+functie print_lijst (Reeks a) {
+    voor (Getal e in a) {
+        afdrukken(e);
+    }
+}
+
+functie hoofd() {
+    publiek Reeks lijst = [1,2,3];
+
+    Draad d1 = draad(print_lijst(lijst));
+    ren(d1);
+    aansluiten(d1);
+
+    afdrukken("De som van de lijst plus 5 is ");
+    afdrukken(toevoeging(som(lijst),5));
+    afdrukken("\n");
+}
