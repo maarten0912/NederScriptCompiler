@@ -36,13 +36,14 @@ public class NederScriptTest {
 
     @Test
     public void testSyntax() {
-
         try {
 
             checkSucces("test1.ns");
             checkFail("test1wrong.ns");
 
-            checkSucces("test2.ns");
+//            checkSucces("test2.ns");
+            // test2 is for when function calls are implemented
+
             checkSucces("testfor.ns");
             checkSucces("testwhile.ns");
             checkSucces("testifelse.ns");
@@ -54,6 +55,14 @@ public class NederScriptTest {
 
     @Test
     public void testContext() {
+        try {
+            checkSucces("testfor.ns");
+            checkSucces("testwhile.ns");
+            checkSucces("testifelse.ns");
+
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
     }
 
     @Test

@@ -7,18 +7,16 @@ import java.util.Stack;
 public class ScopeTable implements SymbolTable {
     private final Stack<NederScriptScope> stack = new Stack<>();
 
-    public ScopeTable() {
-        openScope();
-    }
-
     @Override
     public void openScope() {
+        System.out.println("new scope");
         stack.push(new NederScriptScope());
     }
 
     @Override
     public void closeScope() {
-        if (stack.size() <= 1) {
+        System.out.println("close scope");
+        if (stack.size() <= 0) {
             throw new RuntimeException();
         }
         stack.pop();

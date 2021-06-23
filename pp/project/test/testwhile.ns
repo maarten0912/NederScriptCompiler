@@ -1,6 +1,6 @@
 functie hoofd() {
 
-    Reeks things = ["abcd","0123"];
+    Reeks<Touw> things = ["abcd","0123"];
 
     Getal i = 0;
 

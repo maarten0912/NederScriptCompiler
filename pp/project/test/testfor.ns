@@ -1,6 +1,6 @@
 functie hoofd() {
 
-    Reeks things = ["abcd","0123"];
+    Reeks<Touw> things = ["abcd","0123"];
 
     voor (Getal i = 0; i < 2; i = i + 1) {
         voor (Karakter c in things[i]) {

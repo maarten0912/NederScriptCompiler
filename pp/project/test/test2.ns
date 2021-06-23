@@ -1,6 +1,6 @@
 functie som(Reeks a) : Getal {
 
-
+    Getal b = 1 + 2;
     Getal tijdelijke_som = 0;
     Booleaans a = onwaar;
     voor (Getal i = 0; i < lengte(a); i = i + 1) {
@@ -14,14 +14,14 @@ functie toevoeging (Getal a, Getal b) : Getal {
     geefterug a + b;
 }
 
-functie print_lijst (Reeks a) {
+functie print_lijst (Reeks<Getal> a) {
     voor (Getal e in a) {
         afdrukken(e);
     }
 }
 
 functie hoofd() {
-    publiek Reeks lijst = [1,2,3];
+    publiek Reeks<Getal> lijst = [1,2,3];
 
     Draad d1 = draad(print_lijst(lijst));
     ren(d1);

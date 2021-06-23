@@ -16,6 +16,9 @@ abstract public class NederScriptType {
     /** Singleton instance of Draad type. */
     public static final NederScriptType DRAAD = new Draad();
 
+    /** Singleton instance of Touw type. */
+    public static final NederScriptType TOUW = new Touw(0);
+
     /** Kind of a type. */
     private final NederScriptTypeKind kind;
     protected NederScriptType(NederScriptTypeKind kind) { this.kind = kind;}

@@ -38,7 +38,9 @@ public class NederScriptChecker extends NederScriptBaseListener {
     }
 
     @Override
-    public void enterFunction(NederScriptParser.FunctionContext ctx) { st.openScope(); }
+    public void enterFunction(NederScriptParser.FunctionContext ctx) {
+        st.openScope();
+    }
 
     @Override
     public void exitFunction(NederScriptParser.FunctionContext ctx) {
@@ -58,22 +60,31 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitPrefixExpr(NederScriptParser.PrefixExprContext ctx) {
-        super.exitPrefixExpr(ctx);
+        setType(ctx, getType(ctx.expr()));
     }
 
     @Override
     public void exitParExpr(NederScriptParser.ParExprContext ctx) {
-        super.exitParExpr(ctx);
+        setType(ctx, getType(ctx.expr()));
     }
 
     @Override
     public void exitFunCallExpr(NederScriptParser.FunCallExprContext ctx) {
         super.exitFunCallExpr(ctx);
+        // TODO
     }
 
     @Override
     public void exitCompExpr(NederScriptParser.CompExprContext ctx) {
-        super.exitCompExpr(ctx);
+        if (ctx.compOp().EQ() != null) {
+            checkType(ctx.expr(1), getType(ctx.expr(0)));
+            setType(ctx, getType(ctx.expr(0)));
+        }
+        else {
+            checkType(ctx.expr(0), NederScriptType.GETAL);
+            checkType(ctx.expr(1), NederScriptType.GETAL);
+            setType(ctx, NederScriptType.GETAL);
+        }
     }
 
     @Override
@@ -97,7 +108,16 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitPlusExpr(NederScriptParser.PlusExprContext ctx) {
-        super.exitPlusExpr(ctx);
+        NederScriptType type = getType(ctx.expr(0));
+
+        if (NederScriptType.TOUW.equals(type)) {
+            checkType(ctx.expr(1), NederScriptType.TOUW);
+            setType(ctx, NederScriptType.TOUW);
+        } else {
+            checkType(ctx.expr(0), NederScriptType.GETAL);
+            checkType(ctx.expr(1), NederScriptType.GETAL);
+            setType(ctx, NederScriptType.GETAL);
+        }
     }
 
     @Override
