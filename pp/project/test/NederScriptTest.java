@@ -1,8 +1,6 @@
 package pp.project.test;
 
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -10,6 +8,8 @@ import pp.project.*;
 
 import java.io.File;
 import java.io.IOException;
+
+import static org.junit.Assert.*;
 
 public class NederScriptTest {
 
@@ -61,12 +61,13 @@ public class NederScriptTest {
 
     }
 
+
     private void checkSucces(String filename) throws IOException {
         try {
             System.out.println("\n" + ANSI_GREEN + "currently running file: " + filename + ANSI_RESET + "\n");
             check(parse(filename));
         } catch (ParseException exc) {
-            fail (filename + " should pass the check but didn't");
+            fail (filename + " should pass the check but didn't\nException was: " + exc.getMessage());
         }
     }
 

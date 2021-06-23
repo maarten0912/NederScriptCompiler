@@ -5,6 +5,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.*;
+import pp.block5.cc.simple.Type;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,7 +90,9 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitMultExpr(NederScriptParser.MultExprContext ctx) {
-        super.exitMultExpr(ctx);
+        checkType(ctx.expr(0), NederScriptType.GETAL);
+        checkType(ctx.expr(1), NederScriptType.GETAL);
+        setType(ctx, NederScriptType.GETAL);
     }
 
     @Override
@@ -98,13 +101,55 @@ public class NederScriptChecker extends NederScriptBaseListener {
     }
 
     @Override
+    public void exitNonTypedDecl(NederScriptParser.NonTypedDeclContext ctx) {
+        String var = ctx.VAR().getText();
+        NederScriptType type = typeContextToNederScriptType(ctx.type());
+        this.st.add(var, type);
+        setOffset(ctx, this.st.getOffset(var));
+        System.out.println("Put non typed in table: " + var);
+    }
+
+    @Override
+    public void exitTypedDecl(NederScriptParser.TypedDeclContext ctx) {
+        String var = ctx.VAR().getText();
+        NederScriptType type = typeContextToNederScriptType(ctx.type());
+        this.st.add(var, type);
+        setOffset(ctx, this.st.getOffset(var));
+        System.out.println("Put typed in table: " + var);
+    }
+
+    @Override
+    public void exitForIn(NederScriptParser.ForInContext ctx) {
+        String var = ctx.VAR().getText();
+        NederScriptType type = typeContextToNederScriptType(ctx.type());
+        this.st.add(var, type);
+        //TODO wtf waarom werkt het niet
+        setOffset(ctx, this.st.getOffset(var));
+        System.out.println("Put typed in table: " + var);
+    }
+
+    @Override
     public void exitVarExpr(NederScriptParser.VarExprContext ctx) {
-        super.exitVarExpr(ctx);
+        if (ctx.VAR().size() > 1) {
+            // this var is a function call
+            //TODO
+            return;
+        }
+        String var = ctx.VAR(0).getText();
+        if (!this.st.contains(var)) {
+            addError(ctx, "Variable '%s' not declared", var);
+            return;
+        }
+        NederScriptType type = this.st.getType(var);
+        if (type == null) {
+            addError(ctx, "Variable '%s' not initialized", var);
+        }
+        setType(ctx, type);
     }
 
     @Override
     public void exitStringPrimitive(NederScriptParser.StringPrimitiveContext ctx) {
-        int length = ctx.STR().toString().length() - 2;
+        int length = ctx.STR().getText().length() - 2;
         setType(ctx, new NederScriptType.Touw(length));
     }
 
@@ -189,6 +234,24 @@ public class NederScriptChecker extends NederScriptBaseListener {
         }
     }
 
+    private NederScriptType typeContextToNederScriptType(NederScriptParser.TypeContext s) {
+        if (s.BOOLEAN() != null) {
+            return NederScriptType.BOOLEAANS;
+        } else if (s.STRING() != null) {
+            return NederScriptType.TOUW;
+        } else if (s.INTEGER() != null) {
+            return NederScriptType.GETAL;
+        } else if (s.THREAD() != null) {
+            return NederScriptType.DRAAD;
+        } else if (s.CHARACTER() != null) {
+            return NederScriptType.KARAKTER;
+        } else if (s.ARRAY() != null) {
+            NederScriptType elemType = typeContextToNederScriptType(s.type());
+            return new NederScriptType.Reeks(0, elemType);
+        }
+        return null;
+    }
+
     /** Convenience method to add a flow graph entry to the result. */
     private void setEntry(ParseTree node, ParserRuleContext entry) {
         if (entry == null) {
@@ -200,5 +263,18 @@ public class NederScriptChecker extends NederScriptBaseListener {
     /** Returns the flow graph entry of a given expression or statement. */
     private ParserRuleContext getEntry(ParseTree node) {
         return this.result.getEntry(node);
+    }
+
+    /** Convenience method to add an offset to the result. */
+    private void setOffset(ParseTree node, Integer offset) {
+        if (offset == null) {
+            throw new IllegalArgumentException("null offset");
+        }
+        this.result.setOffset(node, offset);
+    }
+
+    /** Returns the offset of a given expression or statement. */
+    private Integer getOffset(ParseTree node) {
+        return this.result.getOffset(node);
     }
 }

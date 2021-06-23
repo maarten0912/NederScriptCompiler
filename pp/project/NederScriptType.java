@@ -128,6 +128,17 @@ abstract public class NederScriptType {
         @Override
         public String toString() {return "Touw"; }
 
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof NederScriptType.Touw)) {
+                return false;
+            }
+            return true;
+        }
+
     }
 
     /** Draad type */

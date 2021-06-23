@@ -25,4 +25,8 @@ public interface SymbolTable {
 	 */
 	public abstract boolean contains(String id);
 
+	public abstract NederScriptType getType(String id);
+
+	public abstract Integer getOffset(String id);
+
 }

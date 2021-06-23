@@ -38,7 +38,7 @@ assign: VAR (LBRACK (NUM|VAR) RBRACK)* ASS expr;
 
 /** Declaration **/
 decl: (PUBLIC)? type VAR                            #nonTypedDecl
-    | (PUBLIC)? type VAR ASS (primitive | funCall)  #typedDecl
+    | (PUBLIC)? type VAR ASS expr                   #typedDecl
     ;
 
 /** Return statement **/
@@ -59,7 +59,7 @@ primitive: STR                                          #stringPrimitive
          ;
 
 /** Type **/
-type: INTEGER | BOOLEAN | CHARACTER | ARRAY | STRING | THREAD;
+type: INTEGER | BOOLEAN | CHARACTER | (ARRAY LT type GT) | STRING | THREAD;
 
 /** Expressions **/
     expr: prefixOp expr                #prefixExpr

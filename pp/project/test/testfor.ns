@@ -2,7 +2,7 @@ functie hoofd() {
 
     Reeks things = ["abcd","0123"];
 
-    voor (Getal i = 0; i < lengte(things); i = i + 1) {
+    voor (Getal i = 0; i < 2; i = i + 1) {
         voor (Karakter c in things[i]) {
             print(c);
         }

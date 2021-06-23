@@ -36,4 +36,24 @@ public class ScopeTable implements SymbolTable {
         }
         return false;
     }
+
+    @Override
+    public NederScriptType getType(String id) {
+        for (NederScriptScope s : stack) {
+            if (s.contains(id)) {
+                return s.type(id);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Integer getOffset(String id) {
+        for (NederScriptScope s : stack) {
+            if (s.contains(id)) {
+                return s.offset(id);
+            }
+        }
+        return null;
+    }
 }
