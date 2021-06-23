@@ -1,0 +1,18 @@
+functie hoofd() {
+    Booleaans val = onwaar;
+
+    Getal test = 1;
+
+    als (test < 5)
+    {
+        val = waar;
+    }
+    anders
+    {
+        val = onwaar;
+    }
+
+    als (val == waar) {
+        print("Nice");
+    }
+}

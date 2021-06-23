@@ -38,15 +38,15 @@ public class NederScriptTest {
     public void testSyntax() {
         try {
 
-            checkSucces("test1.ns");
-            checkFail("test1wrong.ns");
+            checkSucces("/syntax/test1.ns");
+            checkFail("/syntax/test1wrong.ns");
 
 //            checkSucces("test2.ns");
             // test2 is for when function calls are implemented
 
-            checkSucces("testfor.ns");
-            checkSucces("testwhile.ns");
-            checkSucces("testifelse.ns");
+            checkSucces("/syntax/testfor.ns");
+            checkSucces("/syntax/testwhile.ns");
+            checkSucces("/syntax/testifelse.ns");
 
         } catch (IOException e) {
             fail(e.getMessage());
@@ -54,11 +54,28 @@ public class NederScriptTest {
     }
 
     @Test
+    public void testSyntaxTree() {
+        try {
+            ParseTree tree = parse("/syntax/testtree.ns");
+            tree = tree.getChild(0);
+            ParseTree line2 = tree.getChild(6);
+            assertEquals(line2.getChild(0).getChild(0).getChild(0).getChild(0).getText(),"Getal");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void testContext() {
         try {
-            checkSucces("testfor.ns");
-            checkSucces("testwhile.ns");
-            checkSucces("testifelse.ns");
+
+            checkSucces("/context/testdecl.ns");
+            checkFail("/context/testdeclwrong.ns");
+
+            checkSucces("/context/testtype.ns");
+            checkSucces("/context/testtype2.ns");
+            checkFail("/context/testtypewrong.ns");
+            checkFail("/context/testtype2wrong.ns");
 
         } catch (IOException e) {
             fail(e.getMessage());

@@ -1,0 +1,8 @@
+functie hoofd() {
+    Getal a = 2;
+    Getal b = 2;
+    als (b == a) {
+         a = 1;
+    }
+    afdrukken(a);
+}

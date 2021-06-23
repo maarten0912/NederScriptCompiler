@@ -1,0 +1,11 @@
+functie hoofd() {
+    Getal a = 1;
+    Reeks<Getal> reeks = [1,2,3];
+
+    als (reeks[0] == a) {
+        a = a + 1;
+        reeks = [1,2,3,a];
+    }
+
+    afdrukken(reeks);
+}

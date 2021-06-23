@@ -30,22 +30,8 @@ import pp.iloc.model.Operand.Type;
 import pp.iloc.model.Program;
 import pp.iloc.model.Reg;
 import pp.iloc.model.Str;
-import pp.iloc.parse.ErrorListener;
-import pp.iloc.parse.FormatException;
-import pp.iloc.parse.ILOCBaseListener;
-import pp.iloc.parse.ILOCLexer;
-import pp.iloc.parse.ILOCParser;
-import pp.iloc.parse.ILOCParser.CommentContext;
-import pp.iloc.parse.ILOCParser.DeclContext;
-import pp.iloc.parse.ILOCParser.InstrContext;
-import pp.iloc.parse.ILOCParser.InstrListContext;
-import pp.iloc.parse.ILOCParser.OpCodeContext;
-import pp.iloc.parse.ILOCParser.OperandContext;
-import pp.iloc.parse.ILOCParser.ProgramContext;
-import pp.iloc.parse.ILOCParser.RealOpContext;
-import pp.iloc.parse.ILOCParser.SingleInstrContext;
-import pp.iloc.parse.ILOCParser.SourcesContext;
-import pp.iloc.parse.ILOCParser.TargetsContext;
+import pp.iloc.parse.*;
+import pp.iloc.parse.ILOCParser.*;
 
 /** Assembler for the ILOC language. */
 public class Assembler {
@@ -148,7 +134,7 @@ public class Assembler {
 		}
 
 		@Override
-		public void exitDecl(DeclContext ctx) {
+		public void exitDecl(ILOCParser.DeclContext ctx) {
 			Num symbol = new Num(ctx.ID().getText());
 			if (addSymbol(ctx.getStart(), symbol)) {
 				this.program.setSymb(symbol,
@@ -157,7 +143,7 @@ public class Assembler {
 		}
 
 		@Override
-		public void exitInstrList(InstrListContext ctx) {
+		public void exitInstrList(ILOCParser.InstrListContext ctx) {
 			OpList result = new OpList();
 			if (ctx.label() != null) {
 				Label label = new Label(ctx.label().getText());
