@@ -52,4 +52,10 @@ public class NederScriptScope {
     public Integer offset(String id) {
         return this.offsets.get(id);
     }
+
+    public void printTypes() {
+        for (String s : this.types.keySet()) {
+            System.out.println("Variable: '" + s + "'\t\tType: '" + this.types.get(s) + "'");
+        }
+    }
 }

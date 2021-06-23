@@ -14,7 +14,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     private List<String> errors;
     private NederScriptResult result;
-    private SymbolTable st;
+    private ScopeTable st;
 
     public NederScriptResult check(ParseTree tree) throws ParseException {
         this.result = new NederScriptResult();
@@ -56,7 +56,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
     public void exitNewScopeInst(NederScriptParser.NewScopeInstContext ctx) {
         st.closeScope();
     }
-
 
     @Override
     public void exitPrefixExpr(NederScriptParser.PrefixExprContext ctx) {
@@ -139,7 +138,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     }
 
     @Override
-    public void exitForIn(NederScriptParser.ForInContext ctx) {
+    public void enterForIn(NederScriptParser.ForInContext ctx) {
         String var = ctx.VAR().getText();
         NederScriptType type = typeContextToNederScriptType(ctx.type());
         this.st.add(var, type);
@@ -150,21 +149,33 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitVarExpr(NederScriptParser.VarExprContext ctx) {
+
+        for (int i = 0; i < ctx.VAR().size(); i++) {
+            String var = ctx.VAR(i).getText();
+            if (!this.st.contains(var)) {
+                addError(ctx, "Variable '%s' not declared", var);
+                return;
+            }
+        }
+
         if (ctx.VAR().size() > 1) {
-            // this var is a function call
-            //TODO
+            // this var is a list and an index is supplied
+            //TODO help dit werkt niet
+            System.out.println("Found var with index");
+
+            for (int i = 0; i < ctx.getChildCount(); i++) {
+//                System.out.println(ctx.getChild(i) instanceof VAR);
+            }
+
+
             return;
+        } else {
+            NederScriptType type = this.st.getType(ctx.VAR(0).getText());
+            if (type == null) {
+                addError(ctx, "Variable '%s' not initialized", ctx.VAR(0).getText());
+            }
+            setType(ctx, type);
         }
-        String var = ctx.VAR(0).getText();
-        if (!this.st.contains(var)) {
-            addError(ctx, "Variable '%s' not declared", var);
-            return;
-        }
-        NederScriptType type = this.st.getType(var);
-        if (type == null) {
-            addError(ctx, "Variable '%s' not initialized", var);
-        }
-        setType(ctx, type);
     }
 
     @Override
