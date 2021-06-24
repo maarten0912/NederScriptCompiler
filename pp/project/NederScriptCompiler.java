@@ -36,19 +36,26 @@ public class NederScriptCompiler {
     }
 
 
-    public ParseTree parse (String text) {
+    public ParseTree parse (String text) throws ParseException {
         return parse(CharStreams.fromString(text));
     }
 
-    public ParseTree parse (File file) throws IOException {
+    public ParseTree parse (File file) throws IOException, ParseException {
         return parse(CharStreams.fromPath(file.toPath()));
     }
 
-    private ParseTree parse(CharStream chars) {
+    private ParseTree parse(CharStream chars) throws ParseException {
+        ErrorListener listener = new ErrorListener();
         Lexer lexer = new NederScriptLexer(chars);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(listener);
         TokenStream tokens = new CommonTokenStream(lexer);
         NederScriptParser parser = new NederScriptParser(tokens);
-        return parser.program();
+        parser.removeErrorListeners();
+        parser.addErrorListener(listener);
+        ParseTree result = parser.program();
+        listener.throwException();
+        return result;
     }
 
 

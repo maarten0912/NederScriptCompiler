@@ -1,0 +1,6 @@
+functie hoofd() {
+    Reeks<Getal> a = [1,2,3,4];
+    voor (Getal i = 0; i < 4; i = i + 1) {
+        a[i] = -1;
+    }
+}

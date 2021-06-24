@@ -1,0 +1,15 @@
+functie hoofd() {
+    Getal a = 5;
+    als (a > 3) {
+        Booleaans a = waar;
+        afdrukken(!a);
+    }
+
+    {
+        Touw a = "test";
+        Booleaans b = a[3] == 't';
+    }
+
+    Booleaans c = a == 5;
+
+}

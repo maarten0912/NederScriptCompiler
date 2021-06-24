@@ -5,7 +5,7 @@ functie hoofd() {
          a = 1;
     }
     als (a) {
-        afrukken(b);
+        afdrukken(b);
     }
     afdrukken(a);
 }

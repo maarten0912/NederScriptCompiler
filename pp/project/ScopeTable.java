@@ -1,11 +1,10 @@
 package pp.project;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 public class ScopeTable {
-    private final Stack<NederScriptScope> stack = new Stack<>();
+    // Deque is a better version of Stack, because the iterator goes from top to bottom
+    private final Deque<NederScriptScope> stack = new ArrayDeque<>();
 
     public void openScope() {
         System.out.println("new scope");

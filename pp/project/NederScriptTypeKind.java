@@ -6,5 +6,6 @@ public enum NederScriptTypeKind {
     BOOLEAANS,
     TOUW,
     REEKS,
-    DRAAD
+    DRAAD,
+    LEEGTE
 }

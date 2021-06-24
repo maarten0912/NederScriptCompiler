@@ -161,4 +161,16 @@ abstract public class NederScriptType {
 
     }
 
+    /** Leegte type */
+    // This is the return type of void functions
+    static public class Leegte extends NederScriptType {
+        private Leegte() { super(NederScriptTypeKind.LEEGTE); }
+
+        @Override
+        public int size() { return 4; }
+
+        @Override
+        public String toString() {return "Leegte"; }
+    }
+
 }

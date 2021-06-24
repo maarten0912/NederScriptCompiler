@@ -23,7 +23,7 @@ statement: assign   #assignStat
          ;
 
 /** If Else **/
-ifelse: IF LPAR (expr | funCall) RPAR LBRACE instruction+ RBRACE (ELSE LBRACE instruction+ RBRACE)?;
+ifelse: IF LPAR expr RPAR LBRACE instruction+ RBRACE (ELSE LBRACE instruction+ RBRACE)?;
 
 /** While loops **/
 whileS: WHILE LPAR expr RPAR LBRACE instruction+ RBRACE;
@@ -48,14 +48,14 @@ returnS: RETURN expr;
 print: PRINT LPAR expr RPAR;
 
 /** Function call **/
-funCall: VAR LPAR ((expr | primitive) (COMMA (expr | primitive))*)? RPAR;
+funCall: VAR LPAR (expr (COMMA expr)*)? RPAR;
 
 /** Primitive values **/
-primitive: STR                                          #stringPrimitive
-         | CHR                                          #characterPrimitive
-         | LBRACK primitive (COMMA primitive)* RBRACK   #arrayPrimitive
-         | NUM                                          #integerPrimitive
-         | (TRUE | FALSE)                               #booleanPrimitive
+primitive: STR                                                      #stringPrimitive
+         | CHR                                                      #characterPrimitive
+         | LBRACK (primitive|VAR) (COMMA (primitive|VAR))* RBRACK   #arrayPrimitive
+         | NUM                                                      #integerPrimitive
+         | (TRUE | FALSE)                                           #booleanPrimitive
          ;
 
 /** Type **/

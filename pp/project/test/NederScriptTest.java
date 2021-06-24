@@ -98,16 +98,27 @@ public class NederScriptTest {
 
     private void syntaxSucces(String filename) throws IOException {
         try {
-            System.out.println("\n" + ANSI_GREEN + "currently running file: " + filename + ANSI_RESET + "\n");
-            check(parse(filename));
+            System.out.println("\n" + ANSI_GREEN + "Testing file '" + filename + "' for syntax errors." + ANSI_RESET + "\n");
+            parse(filename);
         } catch (ParseException exc) {
             // ignore parse exceptions
         }
     }
 
+    private void syntaxFail(String filename) throws IOException {
+        try {
+            System.out.println("\n" + ANSI_GREEN + "Testing file '" + filename + "' for syntax errors." + ANSI_RESET);
+            System.out.println(ANSI_RED + "This test should fail" + ANSI_RESET);
+            parse(filename);
+            fail (filename + " should fail the check but didn't");
+        } catch (ParseException exc) {
+            exc.print();
+        }
+    }
+
     private void checkSucces(String filename) throws IOException {
         try {
-            System.out.println("\n" + ANSI_GREEN + "currently running file: " + filename + ANSI_RESET + "\n");
+            System.out.println("\n" + ANSI_GREEN + "Currently checking file: " + filename + ANSI_RESET + "\n");
             check(parse(filename));
         } catch (ParseException exc) {
             exc.print();
@@ -126,11 +137,11 @@ public class NederScriptTest {
         }
     }
 
-    private ParseTree parse(String filename) throws IOException {
+    private ParseTree parse(String filename) throws IOException, ParseException {
         return this.compiler.parse(new File("pp/project/test/" + filename));
     }
 
-    private ParseTree parse (File file) throws IOException {
+    private ParseTree parse (File file) throws IOException, ParseException {
         return this.compiler.parse(file);
     }
 

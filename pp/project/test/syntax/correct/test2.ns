@@ -1,4 +1,4 @@
-functie som(Reeks a) : Getal {
+functie som(Reeks<Getal> a) : Getal {
 
     Getal b = 1 + 2;
     Getal tijdelijke_som = 0;
