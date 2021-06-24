@@ -19,6 +19,9 @@ abstract public class NederScriptType {
     /** Singleton instance of Touw type. */
     public static final NederScriptType TOUW = new Touw(0);
 
+    /** Singleton instance of Leegte type. */
+    public static final NederScriptType LEEGTE = new Leegte();
+
     /** Kind of a type. */
     private final NederScriptTypeKind kind;
     protected NederScriptType(NederScriptTypeKind kind) { this.kind = kind;}

@@ -49,7 +49,7 @@ public class NederScriptTest {
             testFiles = dir.listFiles();
 
             for (File testFile : testFiles) {
-                checkFail("/syntax/wrong/" + testFile.getName());
+                syntaxFail("/syntax/wrong/" + testFile.getName());
             }
 
         } catch (IOException e) {
@@ -64,7 +64,7 @@ public class NederScriptTest {
             tree = tree.getChild(0);
             ParseTree line2 = tree.getChild(6);
             assertEquals(line2.getChild(0).getChild(0).getChild(0).getChild(0).getText(),"Getal");
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
         }
     }
@@ -101,7 +101,8 @@ public class NederScriptTest {
             System.out.println("\n" + ANSI_GREEN + "Testing file '" + filename + "' for syntax errors." + ANSI_RESET + "\n");
             parse(filename);
         } catch (ParseException exc) {
-            // ignore parse exceptions
+            exc.print();
+            fail (filename + " should pass the check but didn't");
         }
     }
 
@@ -128,7 +129,7 @@ public class NederScriptTest {
 
     private void checkFail(String filename) throws IOException {
         try {
-            System.out.println("\n" + ANSI_GREEN + "currently running file: " + filename);
+            System.out.println("\n" + ANSI_GREEN + "Currently checking file: " + filename);
             System.out.println(ANSI_RED + "This test should fail" + ANSI_RESET);
             check(parse(filename));
             fail (filename + " should fail the check but didn't");

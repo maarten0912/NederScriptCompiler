@@ -1,0 +1,13 @@
+functie hoofd() {
+    Booleaans a = waar;
+    Booleaans b = onwaar;
+
+    Booleaans c = a && b;
+
+    Booleaans d;
+    als (c || b) {
+        d = waar;
+    } anders {
+        d = !c;
+    }
+}

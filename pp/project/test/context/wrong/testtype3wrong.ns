@@ -1,0 +1,7 @@
+functie hoofd() {
+    Getal a = 1;
+    a = test();
+}
+functie test() : Touw {
+    geefterug "hoi";
+}

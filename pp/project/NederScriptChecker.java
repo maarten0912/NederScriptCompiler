@@ -20,6 +20,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
         this.result = new NederScriptResult();
         this.errors = new ArrayList<>();
         this.st = new ScopeTable();
+
+        new NederScriptFunctionListener().check(this,tree, st);
         new ParseTreeWalker().walk(this, tree);
         if (hasErrors()) {
             throw new ParseException(getErrors());
@@ -130,7 +132,9 @@ public class NederScriptChecker extends NederScriptBaseListener {
         NederScriptType type = getType(ctx.expr(0));
 
         if (NederScriptType.TOUW.equals(type)) {
-            checkType(ctx.expr(1), NederScriptType.TOUW);
+            if (!NederScriptType.GETAL.equals(getType(ctx.expr(1)))) {
+                checkType(ctx.expr(1), NederScriptType.TOUW);
+            }
             setType(ctx, NederScriptType.TOUW);
         } else {
             checkType(ctx.expr(0), NederScriptType.GETAL);
@@ -395,7 +399,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     }
 
     /** Convenience method to add a type to the result. */
-    private void setType(ParseTree node, NederScriptType type) {
+    public void setType(ParseTree node, NederScriptType type) {
         this.result.setType(node, type);
     }
 
