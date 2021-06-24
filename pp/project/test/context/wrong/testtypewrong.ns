@@ -1,7 +1,7 @@
 functie hoofd() {
     Getal a = "wrong";
     Getal b = 2;
-    als (b == a) {
+    als (b > a) {
          a = "correct";
     }
     afdrukken(a);

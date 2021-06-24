@@ -20,6 +20,10 @@ public class ScopeTable {
         stack.pop();
     }
 
+    public Integer getDepth() {
+        return stack.size();
+    }
+
     public boolean add(String id, NederScriptType type) {
         return stack.peek().put(id, type);
     }

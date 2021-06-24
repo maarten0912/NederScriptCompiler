@@ -125,7 +125,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
         NederScriptType type = typeContextToNederScriptType(ctx.type());
         this.st.add(var, type);
         setOffset(ctx, this.st.getOffset(var));
-        System.out.println("Put non typed in table: " + var);
+        System.out.println("Put non typed in table: " + var + " on scope depth: " + this.st.getDepth());
     }
 
     @Override
@@ -134,7 +134,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
         NederScriptType type = typeContextToNederScriptType(ctx.type());
         this.st.add(var, type);
         setOffset(ctx, this.st.getOffset(var));
-        System.out.println("Put typed in table: " + var);
+        System.out.println("Put typed in table: " + var + " on scope depth: " + this.st.getDepth());
     }
 
     @Override
@@ -145,6 +145,58 @@ public class NederScriptChecker extends NederScriptBaseListener {
         //TODO wtf waarom werkt het niet
         setOffset(ctx, this.st.getOffset(var));
         System.out.println("Put typed in table: " + var);
+    }
+
+    @Override
+    public void enterIfelse(NederScriptParser.IfelseContext ctx) {
+        if (ctx.expr() != null) {
+            ParseTree expr = ctx.expr();
+            if (expr.getChildCount() == 1) {
+                if (st.getType(expr.getText()) != NederScriptType.BOOLEAANS) {
+                    addError(ctx, "Variable '%s' not of type Booleaans", expr.getText());
+                }
+            } else if (expr.getChildCount() == 2) {
+                if (st.getType(expr.getChild(1).getText()) != NederScriptType.BOOLEAANS) {
+                    addError(ctx, "Variable '%s' not of type Booleaans", expr.getChild(1).getText());
+                }
+            }
+//            String var1 = ctx.expr().getChild(0).getText();
+//            String var2 = ctx.expr().getChild(2).getText();
+//            System.out.println(var1 + var2);
+        }
+        else if (ctx.funCall() != null) {
+            // TODO
+        }
+    }
+
+    @Override
+    public void enterIfelseInst(NederScriptParser.IfelseInstContext ctx) {
+        st.openScope();
+    }
+
+    @Override
+    public void exitIfelseInst(NederScriptParser.IfelseInstContext ctx) {
+        st.closeScope();
+    }
+
+    @Override
+    public void enterWhileInst(NederScriptParser.WhileInstContext ctx) {
+        st.openScope();
+    }
+
+    @Override
+    public void exitWhileInst(NederScriptParser.WhileInstContext ctx) {
+        st.closeScope();
+    }
+
+    @Override
+    public void enterForInst(NederScriptParser.ForInstContext ctx) {
+        st.openScope();
+    }
+
+    @Override
+    public void exitForInst(NederScriptParser.ForInstContext ctx) {
+        st.closeScope();
     }
 
     @Override

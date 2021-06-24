@@ -38,15 +38,19 @@ public class NederScriptTest {
     public void testSyntax() {
         try {
 
-            checkSucces("/syntax/test1.ns");
-            checkFail("/syntax/test1wrong.ns");
+            File dir = new File("pp/project/test/syntax/correct");
+            File[] testFiles = dir.listFiles();
 
-//            checkSucces("test2.ns");
-            // test2 is for when function calls are implemented
+            for (File testFile : testFiles) {
+                syntaxSucces("/syntax/correct/" + testFile.getName());
+            }
 
-            checkSucces("/syntax/testfor.ns");
-            checkSucces("/syntax/testwhile.ns");
-            checkSucces("/syntax/testifelse.ns");
+            dir = new File("pp/project/test/syntax/wrong");
+            testFiles = dir.listFiles();
+
+            for (File testFile : testFiles) {
+                checkFail("/syntax/wrong/" + testFile.getName());
+            }
 
         } catch (IOException e) {
             fail(e.getMessage());
@@ -68,14 +72,19 @@ public class NederScriptTest {
     @Test
     public void testContext() {
         try {
+            File dir = new File("pp/project/test/context/correct");
+            File[] testFiles = dir.listFiles();
 
-            checkSucces("/context/testdecl.ns");
-            checkFail("/context/testdeclwrong.ns");
+            for (File testFile : testFiles) {
+                checkSucces("/context/correct/" + testFile.getName());
+            }
 
-            checkSucces("/context/testtype.ns");
-            checkSucces("/context/testtype2.ns");
-            checkFail("/context/testtypewrong.ns");
-            checkFail("/context/testtype2wrong.ns");
+            dir = new File("pp/project/test/context/wrong");
+            testFiles = dir.listFiles();
+
+            for (File testFile : testFiles) {
+                checkFail("/context/wrong/" + testFile.getName());
+            }
 
         } catch (IOException e) {
             fail(e.getMessage());
@@ -87,24 +96,33 @@ public class NederScriptTest {
 
     }
 
+    private void syntaxSucces(String filename) throws IOException {
+        try {
+            System.out.println("\n" + ANSI_GREEN + "currently running file: " + filename + ANSI_RESET + "\n");
+            check(parse(filename));
+        } catch (ParseException exc) {
+            // ignore parse exceptions
+        }
+    }
 
     private void checkSucces(String filename) throws IOException {
         try {
             System.out.println("\n" + ANSI_GREEN + "currently running file: " + filename + ANSI_RESET + "\n");
             check(parse(filename));
         } catch (ParseException exc) {
-            fail (filename + " should pass the check but didn't\nException was: " + exc.getMessage());
+            exc.print();
+            fail (filename + " should pass the check but didn't");
         }
     }
 
     private void checkFail(String filename) throws IOException {
         try {
             System.out.println("\n" + ANSI_GREEN + "currently running file: " + filename);
-            System.out.println("the errors below are the errors that should occur;" + ANSI_RESET);
+            System.out.println(ANSI_RED + "This test should fail" + ANSI_RESET);
             check(parse(filename));
             fail (filename + " should fail the check but didn't");
         } catch (ParseException exc) {
-            //good
+            exc.print();
         }
     }
 
