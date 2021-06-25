@@ -3,7 +3,7 @@ package pp.project.test;
 import org.junit.Test;
 
 import org.antlr.v4.runtime.tree.ParseTree;
-import pp.project.*;
+import pp.project.build.NederScriptCompiler;
 import pp.project.elaboration.NederScriptResult;
 import pp.project.exception.ParseException;
 

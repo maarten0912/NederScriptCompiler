@@ -1,4 +1,4 @@
-package pp.project.sprockell;
+package pp.project.generation;
 
 import pp.project.generation.NederScriptInstruction;
 import pp.project.generation.NederScriptProgram;

@@ -1,4 +1,4 @@
-package pp.project;
+package pp.project.build;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,8 +9,6 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
-import pp.iloc.Simulator;
-import pp.iloc.model.Program;
 import pp.project.elaboration.NederScriptChecker;
 import pp.project.elaboration.NederScriptLexer;
 import pp.project.elaboration.NederScriptParser;
@@ -19,8 +17,7 @@ import pp.project.exception.ErrorListener;
 import pp.project.exception.ParseException;
 import pp.project.generation.NederScriptGenerator;
 import pp.project.generation.NederScriptProgram;
-import pp.project.sprockell.HaskellRunner;
-import pp.project.sprockell.SprockellBuilder;
+import pp.project.generation.SprockellBuilder;
 
 public class NederScriptCompiler {
 
