@@ -15,7 +15,7 @@ abstract public class NederScriptTarget {
 
         @Override
         public String toString() {
-            return String.format("Abs %s",codeAddr);
+            return String.format("Abs (%s)",codeAddr);
         }
     }
 
@@ -32,7 +32,7 @@ abstract public class NederScriptTarget {
 
         @Override
         public String toString() {
-            return String.format("Rel %s",codeAddr);
+            return String.format("Rel (%s)",codeAddr);
         }
     }
 
@@ -49,7 +49,7 @@ abstract public class NederScriptTarget {
 
         @Override
         public String toString() {
-            return String.format("Ind %s",regAddr);
+            return String.format("Ind (%s)",regAddr);
         }
     }
 }

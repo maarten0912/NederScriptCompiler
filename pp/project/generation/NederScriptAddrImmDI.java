@@ -15,7 +15,7 @@ abstract public class NederScriptAddrImmDI {
 
         @Override
         public String toString() {
-            return "ImmValue " + immValue;
+            return String.format("ImmValue (%s)",immValue);
         }
     }
 
@@ -32,7 +32,7 @@ abstract public class NederScriptAddrImmDI {
 
         @Override
         public String toString() {
-            return String.format("DirAddr (MemAddr %s)",memAddr);
+            return String.format("DirAddr (%s)",memAddr);
         }
     }
 
@@ -49,7 +49,7 @@ abstract public class NederScriptAddrImmDI {
 
         @Override
         public String toString() {
-            return String.format("IndAddr (RegAddr %s)",regAddr);
+            return String.format("IndAddr (%s)",regAddr);
 
         }
     }
