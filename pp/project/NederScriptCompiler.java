@@ -30,9 +30,48 @@ public class NederScriptCompiler {
 
     private final NederScriptChecker checker;
 
+    private final NederScriptGenerator generator;
+
     private NederScriptCompiler() {
         this.checker = new NederScriptChecker();
+        this.generator = new NederScriptGenerator();
     }
+
+    public static void main(String[] args) {
+        String filename;
+        if (args.length != 1) {
+            filename = "pp/project/testfile.ns";
+        } else {
+            filename = args[0];
+        }
+        try {
+            System.out.println("--- Running " + filename);
+            NederScriptProgram prog = instance().compile(new File(filename));
+//            System.out.println(prog.prettyPrint());
+            SprockellBuilder sprockell = prog.toHaskell();
+            new HaskellRunner().run("pp/project/program.hs",sprockell);
+            System.out.println("--- Done with " + filename);
+        } catch (ParseException exc) {
+            exc.print();
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
+    }
+
+
+    public NederScriptProgram compile(String text) throws ParseException {
+        return compile(parse(text));
+    }
+
+    public NederScriptProgram compile(File file) throws ParseException, IOException {
+        return compile(parse(file));
+    }
+
+    public NederScriptProgram compile(ParseTree tree) throws ParseException {
+        NederScriptResult checkResult = this.checker.check(tree);
+        return this.generator.generate(tree, checkResult);
+    }
+
 
     public NederScriptResult check(String text) throws ParseException {
         return check(parse(text));
