@@ -52,20 +52,17 @@ public class NederScriptCompiler {
 
 
             filename = filename.split(".ns")[0];
-            filename = filename + ".hs";
+            String filenamehs = filename + ".hs";
 
-            new HaskellRunner().run("pp/project/" + filename,sprockell);
+            new HaskellRunner().run("pp/project/" + filenamehs,sprockell);
 
-            Process p = Runtime.getRuntime().exec("ghc " + filename,null,new File("pp/project"));
+            System.out.println("\n--- Created Haskell file "+ filenamehs);
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename,null,new File("pp/project"));
+
             BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-            System.out.println("\n--- Created Haskell file "+ filename);
             String line;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
 
             if ((line = errors.readLine()) != null) {
                 // TODO error?
@@ -75,7 +72,6 @@ public class NederScriptCompiler {
                     System.out.println(line);
                 }
             }
-
         } catch (ParseException exc) {
             exc.print();
         } catch (IOException exc) {

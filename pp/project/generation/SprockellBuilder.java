@@ -17,20 +17,17 @@ public class SprockellBuilder {
 
     private void createSprockell() {
         initFile();
-        for (NederScriptInstruction ins : prog.getInstructions()) {
-            addInstr(ins);
-            spacer();
+        for (int i = 0; i < prog.getInstructions().size(); i++) {
+            addInstr(prog.getInstructions().get(i));
+            if (i + 1 < prog.getInstructions().size()){
+                spacer();
+            }
         }
-        addEndProg();
         endFile();
     }
 
     private void addInstr(NederScriptInstruction instr) {
         builder.append(instr.toString());
-    }
-
-    private void addEndProg() {
-        builder.append("EndProg");
     }
 
     private void initFile() {
@@ -39,15 +36,15 @@ public class SprockellBuilder {
         builder.append("NederScript is a custom language created by Maarten Meijer and Pepijn Visser \n");
         builder.append("-} \n\n");
         builder.append("prog :: [Instruction] \n");
-        builder.append("prog = [ \n\t");
+        builder.append("prog = [ \n    ");
     }
 
     private void spacer() {
-        builder.append("\n\t, ");
+        builder.append("\n    , ");
     }
 
     private void endFile() {
-        builder.append("\n\t]\n\n");
+        builder.append("\n    ]\n\n");
         builder.append("main = run [prog]");
     }
 

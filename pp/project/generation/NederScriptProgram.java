@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NederScriptProgram {
-    List<NederScriptInstruction> instList;
+    private List<NederScriptInstruction> instList;
 
     public NederScriptProgram() {
         instList = new ArrayList<>();
