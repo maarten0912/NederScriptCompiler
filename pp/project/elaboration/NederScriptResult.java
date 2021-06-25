@@ -1,9 +1,8 @@
-package pp.project;
+package pp.project.elaboration;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import pp.block5.cc.simple.Type;
 
 public class NederScriptResult {
 

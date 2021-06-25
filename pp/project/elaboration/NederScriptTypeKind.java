@@ -1,4 +1,4 @@
-package pp.project;
+package pp.project.elaboration;
 
 public enum NederScriptTypeKind {
     GETAL,

@@ -1,11 +1,13 @@
-package pp.project;
+package pp.project.elaboration;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.*;
-import pp.block5.cc.simple.Type;
+import pp.project.elaboration.NederScriptBaseListener;
+import pp.project.elaboration.NederScriptParser;
+import pp.project.exception.ParseException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +133,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     public void exitPlusExpr(NederScriptParser.PlusExprContext ctx) {
         NederScriptType type = getType(ctx.expr(0));
 
-        if (NederScriptType.TOUW.equals(type)) {
+        if (type.equals(NederScriptType.TOUW)) {
             if (!NederScriptType.GETAL.equals(getType(ctx.expr(1)))) {
                 checkType(ctx.expr(1), NederScriptType.TOUW);
             }
@@ -171,7 +173,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void exitIfelse(NederScriptParser.IfelseContext ctx) {
         if (getType(ctx.expr()) != NederScriptType.BOOLEAANS) {
-            addError(ctx, "If statement requires Booleaans type: '%s'", ctx.expr().getText());
+            addError(ctx, "If statement requires Booleaans type: '%s', found type '%s'", ctx.expr().getText(), getType(ctx.expr()));
         }
     }
 
@@ -314,8 +316,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitStringPrimitive(NederScriptParser.StringPrimitiveContext ctx) {
-        int length = ctx.STR().getText().length() - 2;
-        setType(ctx, new NederScriptType.Touw(length));
+//        int length = ctx.STR().getText().length() - 2;
+        setType(ctx, NederScriptType.TOUW);
     }
 
     @Override
@@ -325,8 +327,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitArrayPrimitive(NederScriptParser.ArrayPrimitiveContext ctx) {
-        int arrayLength = ctx.primitive().size();
-
         NederScriptType type = null;
         if (ctx.primitive().size() > 0) {
             type = getType(ctx.primitive(0));
@@ -355,9 +355,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
             } else {
                 addError(ctx, "Variable '%s' not declared", var);
             }
-
         }
-        setType(ctx, new NederScriptType.Reeks(arrayLength, type));
+        setType(ctx, new NederScriptType.Reeks(type));
     }
 
     @Override
@@ -398,6 +397,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
         this.errors.add(message);
     }
 
+
     /** Convenience method to add a type to the result. */
     public void setType(ParseTree node, NederScriptType type) {
         this.result.setType(node, type);
@@ -436,7 +436,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
             return NederScriptType.KARAKTER;
         } else if (s.ARRAY() != null) {
             NederScriptType elemType = typeContextToNederScriptType(s.type());
-            return new NederScriptType.Reeks(0, elemType);
+            return new NederScriptType.Reeks(elemType);
         }
         return null;
     }

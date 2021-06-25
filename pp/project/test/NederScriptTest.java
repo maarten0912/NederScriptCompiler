@@ -2,9 +2,10 @@ package pp.project.test;
 
 import org.junit.Test;
 
-import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import pp.project.*;
+import pp.project.elaboration.NederScriptResult;
+import pp.project.exception.ParseException;
 
 import java.io.File;
 import java.io.IOException;

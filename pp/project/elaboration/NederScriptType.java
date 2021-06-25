@@ -1,7 +1,4 @@
-package pp.project;
-
-import pp.block5.cc.simple.Type;
-import pp.iloc.eval.Machine;
+package pp.project.elaboration;
 
 abstract public class NederScriptType {
     /** Singleton instance of Booleaans type. */
@@ -13,11 +10,11 @@ abstract public class NederScriptType {
     /** Singleton instance of Getal type. */
     public static final NederScriptType GETAL = new Getal();
 
+    /** Singleton instance of Touw type. */
+    public static final NederScriptType TOUW = new Touw();
+
     /** Singleton instance of Draad type. */
     public static final NederScriptType DRAAD = new Draad();
-
-    /** Singleton instance of Touw type. */
-    public static final NederScriptType TOUW = new Touw(0);
 
     /** Singleton instance of Leegte type. */
     public static final NederScriptType LEEGTE = new Leegte();
@@ -74,23 +71,18 @@ abstract public class NederScriptType {
 
     /** Reeks type */
     static public class Reeks extends NederScriptType {
-        private final int length;
         private final NederScriptType elemType;
 
-        public Reeks(int length, NederScriptType elemType) {
+        public Reeks (NederScriptType elemType) {
             super(NederScriptTypeKind.REEKS);
-            assert length >= 0;
-            this.length = length;
             this.elemType = elemType;
         }
-
-        public Integer getLength() { return this.length; }
 
         public NederScriptType getElemType() { return this.elemType; }
 
         @Override
         public int size() {
-            return 4 * (getLength() + 1);
+            return 4;
         }
 
         @Override
@@ -116,15 +108,12 @@ abstract public class NederScriptType {
     /** Touw type */
     static public class Touw extends NederScriptType {
 
-        private final int length;
 
-        public Touw(int length) {
+        public Touw() {
             super(NederScriptTypeKind.TOUW);
-            assert length >= 0;
-            this.length = length;
         }
 
-        public Integer getLength() { return this.length; }
+        public Integer getLength() { return 4; }
 
         @Override
         public int size() {
