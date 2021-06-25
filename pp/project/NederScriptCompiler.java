@@ -1,7 +1,9 @@
 package pp.project;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -40,17 +42,43 @@ public class NederScriptCompiler {
     public static void main(String[] args) {
         String filename;
         if (args.length != 1) {
-            filename = "pp/project/testfile.ns";
+            filename = "testfile.ns";
         } else {
             filename = args[0];
         }
         try {
             System.out.println("--- Running " + filename);
-            NederScriptProgram prog = instance().compile(new File(filename));
+            NederScriptProgram prog = instance().compile(new File("pp/project/" + filename));
 //            System.out.println(prog.prettyPrint());
             SprockellBuilder sprockell = prog.toHaskell();
-            new HaskellRunner().run("pp/project/program.hs",sprockell);
             System.out.println("--- Done with " + filename);
+
+
+            filename = filename.split(".ns")[0];
+            filename = filename + ".hs";
+
+            new HaskellRunner().run("pp/project/" + filename,sprockell);
+
+            Process p = Runtime.getRuntime().exec("ghc " + filename,null,new File("pp/project"));
+
+            BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+            BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+            System.out.println("\n--- Created Haskell file "+ filename);
+            String line;
+            while ((line = in.readLine()) != null) {
+                System.out.println(line);
+            }
+
+            if ((line = errors.readLine()) != null) {
+                // TODO error?
+                System.out.println("\nHaskell error:");
+                System.out.println(line);
+                while ((line = errors.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+
         } catch (ParseException exc) {
             exc.print();
         } catch (IOException exc) {

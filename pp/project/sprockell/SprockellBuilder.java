@@ -39,15 +39,15 @@ public class SprockellBuilder {
         builder.append("NederScript is a custom language created by Maarten Meijer and Pepijn Visser \n");
         builder.append("-} \n\n");
         builder.append("prog :: [Instruction] \n");
-        builder.append("prog = [ \n");
+        builder.append("prog = [ \n\t");
     }
 
     private void spacer() {
-        builder.append("\n, ");
+        builder.append("\n\t, ");
     }
 
     private void endFile() {
-        builder.append("\n]\n\n");
+        builder.append("\n\t]\n\n");
         builder.append("main = run [prog]");
     }
 
