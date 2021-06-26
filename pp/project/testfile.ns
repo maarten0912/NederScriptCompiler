@@ -1,3 +1,4 @@
 functie hoofd() {
     Getal a = 1;
+    afdrukken(a);
 }

@@ -36,6 +36,54 @@ public class NederScriptCompiler {
         this.generator = new NederScriptGenerator();
     }
 
+    /**
+     * Function to run the compiler from another place
+     * @param file
+     * @param debugMode
+     */
+    public void main(String file) {
+        String filename = file;
+        try {
+            System.out.println("--- Compiling " + filename);
+            NederScriptProgram prog = instance().compile(new File("pp/project/" + filename));
+            prog.prettyPrint();
+            SprockellBuilder sprockell = prog.toHaskell();
+            System.out.println("\n--- Finished compiling " + filename);
+
+
+            filename = filename.split(".ns")[0];
+            String filenamehs = filename + ".hs";
+
+            new HaskellRunner().run("pp/project/" + filenamehs,sprockell);
+
+            System.out.println("\n--- Created haskell file "+ filenamehs);
+
+            Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename,null,new File("pp/project"));
+
+            System.out.println("\n--- Created executable out/"+ filename + ".exe");
+            BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+            String line;
+
+            if ((line = errors.readLine()) != null) {
+                // TODO error?
+                System.out.println("\nHaskell error:");
+                System.out.println(line);
+                while ((line = errors.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+        } catch (ParseException exc) {
+            exc.print();
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
+    }
+
+    /**
+     * Function to run the compiler
+     * @param args
+     */
     public static void main(String[] args) {
         String filename;
         if (args.length != 1) {
@@ -44,11 +92,11 @@ public class NederScriptCompiler {
             filename = args[0];
         }
         try {
-            System.out.println("--- Running " + filename);
+            System.out.println("--- Compiling " + filename);
             NederScriptProgram prog = instance().compile(new File("pp/project/" + filename));
-//            System.out.println(prog.prettyPrint());
+            prog.prettyPrint();
             SprockellBuilder sprockell = prog.toHaskell();
-            System.out.println("--- Done with " + filename);
+            System.out.println("\n--- Finished compiling " + filename);
 
 
             filename = filename.split(".ns")[0];
@@ -56,10 +104,11 @@ public class NederScriptCompiler {
 
             new HaskellRunner().run("pp/project/" + filenamehs,sprockell);
 
-            System.out.println("\n--- Created Haskell file "+ filenamehs);
+            System.out.println("\n--- Created haskell file "+ filenamehs);
 
             Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename,null,new File("pp/project"));
 
+            System.out.println("\n--- Created executable out/"+ filename + ".exe");
             BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
             String line;

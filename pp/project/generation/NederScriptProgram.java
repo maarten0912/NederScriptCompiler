@@ -3,32 +3,47 @@ package pp.project.generation;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * reg0          = 0    :: Int                          -- names for registers. reg0 is ALWAYS 0
+ * regSprID      = 1    :: Int                          -- regSprID: contains the sprockellID
+ * regA          = 2    :: Int                          -- usage of registers A-F to be chosen by the user
+ * regB          = 3    :: Int
+ * regC          = 4    :: Int
+ * regD          = 5    :: Int
+ * regE          = 6    :: Int
+ * regF          = 7    :: Int
+ * regSP         = regbankSize                          -- register for stack pointer
+ * regPC         = regbankSize + 1                      -- register for program counter
+ *
+ * -- defines the number of registers excluding the stack pointer & program counter
+ * regbankSize   =  8   :: Int
+ * localMemSize  = 32   :: Int
+ *
+ * shMemSize     =  8   :: Int
+ * channelDelay  =  4   :: Int
+ *
+ * numberIOaddr, charIOaddr :: MemAddr
+ * numberIOaddr = 0x10000                               -- 65536
+ * charIOaddr   = 0x10001                               -- 65537
+ *
+ * numberIO, charIO :: AddrImmDI
+ * numberIO = DirAddr numberIOaddr
+ * charIO   = DirAddr charIOaddr
+ */
+
 public class NederScriptProgram {
     private List<NederScriptInstruction> instList;
+    private Integer threadNumber;
+    private Boolean debugMode;
+    private String debugFunction;
+    private String debugShowFunction;
 
     public NederScriptProgram() {
-        instList = new ArrayList<>();
-        instList.add(new NederScriptInstruction.Debug("Beginning program! Enter a number:"));
-        instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
-        instList.add(new NederScriptInstruction.Receive(6));
-
-        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(0),2));
-        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
-
-        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Gt,2,6,4));
-        instList.add(new NederScriptInstruction.Branch(4, new NederScriptTarget.Abs(13)));
-        instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
-        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add,2,3,2));
-        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Gt,3,6,4));
-        instList.add(new NederScriptInstruction.Branch(4, new NederScriptTarget.Abs(13)));
-        instList.add(new NederScriptInstruction.WriteInstr(3, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
-        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add,2,3,3));
-        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-8)));
-
-        instList.add(new NederScriptInstruction.EndProg());
-        for (NederScriptInstruction i : instList) {
-            System.out.println(i);
-        }
+        this.instList = new ArrayList<>();
+        this.threadNumber = 1;
+        this.debugMode = false;
+        this.debugFunction = "debuggerSimplePrintAndWait";
+        this.debugShowFunction = "myShow";
     }
 
     public SprockellBuilder toHaskell() {
@@ -40,8 +55,42 @@ public class NederScriptProgram {
         this.instList.add(inst);
     }
 
-    public String prettyPrint() {
-        return null;
+    public void prettyPrint() {
+        for (NederScriptInstruction i : instList) {
+            System.out.println(i);
+        }
+    }
+
+    public void incrementThreadNumber() {
+        this.threadNumber++;
+    }
+
+    public Integer getThreadNumber() {
+        return this.threadNumber;
+    }
+
+    public Boolean getDebugMode() {
+        return this.debugMode;
+    }
+
+    public void setDebugMode(Boolean mode) {
+        this.debugMode = mode;
+    }
+
+    public String getDebugFunction() {
+        return debugFunction;
+    }
+
+    public void setDebugFunction(String debugFunction) {
+        this.debugFunction = debugFunction;
+    }
+
+    public String getDebugShowFunction() {
+        return debugShowFunction;
+    }
+
+    public void setDebugShowFunction(String debugShowFunction) {
+        this.debugShowFunction = debugShowFunction;
     }
 
     public List<NederScriptInstruction> getInstructions() {

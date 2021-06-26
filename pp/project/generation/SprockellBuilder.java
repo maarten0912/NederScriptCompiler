@@ -45,8 +45,19 @@ public class SprockellBuilder {
 
     private void endFile() {
         builder.append("\n    ]\n\n");
-        builder.append("main = run [prog]");
+        Integer threadNumber = this.prog.getThreadNumber();
+        String progString = "[";
+        for (int i = 0; i < threadNumber - 1; i++) {
+            progString += "prog,";
+        }
+        progString += "prog]";
+        if (this.prog.getDebugMode()) {
+            builder.append(String.format("main = runWithDebugger (%s %s) %s",this.prog.getDebugFunction(), this.prog.getDebugShowFunction(), progString));
+        } else {
+            builder.append("main = run " + progString);
+        }
     }
+
 
     public String getRes() {
         return builder.toString();

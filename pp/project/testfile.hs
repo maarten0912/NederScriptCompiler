@@ -6,7 +6,7 @@ NederScript is a custom language created by Maarten Meijer and Pepijn Visser
 
 prog :: [Instruction] 
 prog = [ 
-    Debug ("Beginning program! Enter a number:")
+    Debug ("Beginning program!!!")
     , ReadInstr (DirAddr (65536))
     , Receive (6)
     , Load (ImmValue (0)) (2)
@@ -19,8 +19,8 @@ prog = [
     , Branch (4) (Abs (13))
     , WriteInstr (3) (DirAddr (65536))
     , Compute (Add) (2) (3) (3)
-    , Jump (Rel (-8)
+    , Jump (Rel (-8))
     , EndProg
     ]
 
-main = run [prog]
+main = run [prog,prog]
