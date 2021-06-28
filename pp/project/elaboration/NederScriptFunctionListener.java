@@ -12,6 +12,8 @@ public class NederScriptFunctionListener extends NederScriptBaseListener {
     public void check(NederScriptChecker checker, ParseTree tree, ScopeTable st) {
         this.st = st;
         this.checker = checker;
+        this.st.add("afdrukken", NederScriptType.LEEGTE);
+        this.st.add("lengte", NederScriptType.GETAL);
         new ParseTreeWalker().walk(this, tree);
     }
 

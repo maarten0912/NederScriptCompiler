@@ -91,6 +91,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitFunCall(NederScriptParser.FunCallContext ctx) {
+        //TODO check if number and types of args are correct
         if (!this.st.contains(ctx.VAR().getText())) {
             addError(ctx, "Function '" + ctx.VAR().getText() + "' does not exist.");
         } else {

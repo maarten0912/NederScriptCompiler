@@ -18,7 +18,6 @@ instruction: statement SEMI                     #normalInst
 statement: assign   #assignStat
          | decl     #declStat
          | returnS  #returnStat
-         | print    #printStat
          | funCall  #functionCallStat
          ;
 
@@ -43,9 +42,6 @@ decl: (PUBLIC)? type VAR                            #nonTypedDecl
 
 /** Return statement **/
 returnS: RETURN expr;
-
-/** Print statement **/
-print: PRINT LPAR expr RPAR;
 
 /** Function call **/
 funCall: VAR LPAR (expr (COMMA expr)*)? RPAR;
@@ -77,7 +73,7 @@ type: INTEGER | BOOLEAN | CHARACTER | (ARRAY LT type GT) | STRING | THREAD;
 prefixOp: MINUS | NOT;
 
 /** Multiplicative operator. */
-multOp: STAR | SLASH;
+multOp: STAR;
 
 /** Additive operator. */
 plusOp: PLUS | MINUS;
@@ -127,7 +123,6 @@ TRUE: 'waar';
 FALSE: 'onwaar';
 FUN: 'functie';
 RETURN: 'geefterug';
-PRINT: 'afdrukken';
 PUBLIC: 'publiek';
 
 /** Types **/
