@@ -442,19 +442,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
         return null;
     }
 
-    /** Convenience method to add a flow graph entry to the result. */
-    private void setEntry(ParseTree node, ParserRuleContext entry) {
-        if (entry == null) {
-            throw new IllegalArgumentException("Null flow graph entry");
-        }
-        this.result.setEntry(node, entry);
-    }
-
-    /** Returns the flow graph entry of a given expression or statement. */
-    private ParserRuleContext getEntry(ParseTree node) {
-        return this.result.getEntry(node);
-    }
-
     /** Convenience method to add an offset to the result. */
     private void setOffset(ParseTree node, Integer offset) {
         if (offset == null) {

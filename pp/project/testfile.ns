@@ -1,4 +1,5 @@
 functie hoofd() {
-    Getal a = 1;
+    Getal a = 5
     afdrukken(a);
 }
+

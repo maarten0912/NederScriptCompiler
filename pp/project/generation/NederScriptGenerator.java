@@ -33,7 +33,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         this.regs = new ParseTreeProperty<>();
         this.labels = new ParseTreeProperty<>();
         this.regCount = 0;
-        tree.accept(this);
+        this.prog.addInstructions(tree.accept(this));
 //        this.makeFibonacci();
         if (errs.size() > 0) {
             throw new ParseException(errs);

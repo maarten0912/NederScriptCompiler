@@ -55,6 +55,10 @@ public class NederScriptProgram {
         this.instList.add(inst);
     }
 
+    public void addInstructions(List<NederScriptInstruction> insts) {
+        this.instList.addAll(insts);
+    }
+
     public void prettyPrint() {
         for (NederScriptInstruction i : instList) {
             System.out.println(i);
