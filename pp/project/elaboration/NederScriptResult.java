@@ -33,6 +33,10 @@ public class NederScriptResult {
         this.types.put(node, type);
     }
 
+    public void setPublic(ParseTree node, Boolean isPublic) {
+        this.isPublic.put(node, isPublic);
+    }
+
     /** Returns the type associated with a given parse tree node. */
     public NederScriptType getType(ParseTree node) {
         return this.types.get(node);

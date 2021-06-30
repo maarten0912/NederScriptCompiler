@@ -174,6 +174,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
         if (ctx.PUBLIC() != null) {
             this.globalSt.add(var, type);
             setOffset(ctx, this.globalSt.getOffset(var));
+            setPublic(ctx, true);
         } else {
             this.st.add(var, type);
             setOffset(ctx, this.st.getOffset(var));
@@ -195,9 +196,16 @@ public class NederScriptChecker extends NederScriptBaseListener {
         } else {
             type = typeContextToNederScriptType(ctx.type());
         }
-        this.st.add(var, type);
+        if (ctx.PUBLIC() != null) {
+            this.globalSt.add(var, type);
+            setOffset(ctx, this.globalSt.getOffset(var));
+            setPublic(ctx, true);
+        } else {
+            this.st.add(var, type);
+            setOffset(ctx, this.st.getOffset(var));
+            setPublic(ctx, false);
+        }
         checkType(ctx.expr(), type);
-        setOffset(ctx, this.st.getOffset(var));
     }
 
     @Override
@@ -422,6 +430,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     public void enterThreadInst(NederScriptParser.ThreadInstContext ctx) {
         st.openScope();
         globalSt.openScope();
+        this.result.addThread();
     }
 
     @Override
@@ -430,15 +439,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
         globalSt.closeScope();
     }
 
-    @Override
-    public void enterThread(NederScriptParser.ThreadContext ctx) {
-        super.enterThread(ctx);
-    }
-
-    @Override
-    public void exitThread(NederScriptParser.ThreadContext ctx) {
-        super.exitThread(ctx);
-    }
 
     @Override
     public void visitErrorNode(ErrorNode node) {
@@ -473,6 +473,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     public void setType(ParseTree node, NederScriptType type) {
         this.result.setType(node, type);
     }
+
 
     /** Returns the type of a given expression or type node. */
     private NederScriptType getType(ParseTree node) {
