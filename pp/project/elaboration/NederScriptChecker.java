@@ -177,6 +177,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
         } else {
             this.st.add(var, type);
             setOffset(ctx, this.st.getOffset(var));
+            setPublic(ctx, false);
         }
     }
 
@@ -515,6 +516,13 @@ public class NederScriptChecker extends NederScriptBaseListener {
             throw new IllegalArgumentException("null offset");
         }
         this.result.setOffset(node, offset);
+    }
+
+    private void setPublic(ParseTree node, Boolean isPublic) {
+        if (isPublic == null) {
+            throw new IllegalArgumentException("null boolean");
+        }
+        this.result.setPublic(node, isPublic);
     }
 
     /** Returns the offset of a given expression or statement. */

@@ -10,7 +10,8 @@ public class NederScriptResult {
     private final ParseTreeProperty<NederScriptType> types = new ParseTreeProperty<>();
     /** Mapping from variables to coordinates. */
     private final ParseTreeProperty<Integer> offsets = new ParseTreeProperty<>();
-
+    /** Mapping from variables to public coordinates. */
+    private final ParseTreeProperty<Boolean> isPublic = new ParseTreeProperty<>();
     private Integer numThreads = 1;
 
     /** Adds an association from a parse tree node containing a
