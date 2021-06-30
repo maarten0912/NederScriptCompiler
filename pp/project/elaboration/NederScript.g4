@@ -11,6 +11,7 @@ instruction: statement SEMI                     #normalInst
            | ifelse                             #ifelseInst
            | whileS                             #whileInst
            | forS                               #forInst
+           | thread                             #threadInst
            | LBRACE (statement SEMI)+ RBRACE    #newScopeInst
            ;
 
@@ -27,10 +28,10 @@ ifelse: IF LPAR expr RPAR LBRACE instruction+ RBRACE (ELSE LBRACE instruction+ R
 /** While loops **/
 whileS: WHILE LPAR expr RPAR LBRACE instruction+ RBRACE;
 
+thread: THREAD LBRACE instruction+ RBRACE;
+
 /** For loops **/
-forS: FOR LPAR statement SEMI expr SEMI statement RPAR LBRACE instruction+ RBRACE   #forNormal
-   | FOR LPAR type VAR IN expr RPAR LBRACE instruction+ RBRACE            #forIn
-   ;
+forS: FOR LPAR (assign | decl) SEMI expr SEMI statement RPAR LBRACE instruction+ RBRACE;
 
 /** Assignment **/
 assign: VAR (LBRACK (NUM|VAR) RBRACK)* ASS expr;
@@ -55,7 +56,7 @@ primitive: STR                                                      #stringPrimi
          ;
 
 /** Type **/
-type: INTEGER | BOOLEAN | CHARACTER | (ARRAY LT type GT) | STRING | THREAD;
+type: INTEGER | BOOLEAN | CHARACTER | (ARRAY LT type GT LT NUM GT) | (STRING LT NUM GT);
 
 /** Expressions **/
     expr: prefixOp expr                #prefixExpr
@@ -124,13 +125,13 @@ FALSE: 'onwaar';
 FUN: 'functie';
 RETURN: 'geefterug';
 PUBLIC: 'publiek';
+THREAD: 'draad';
 
 /** Types **/
 INTEGER: 'Getal';
 BOOLEAN: 'Booleaans';
 ARRAY: 'Reeks';
 STRING: 'Touw';
-THREAD: 'Draad';
 CHARACTER: 'Karakter';
 
 /** Fragments for use below **/

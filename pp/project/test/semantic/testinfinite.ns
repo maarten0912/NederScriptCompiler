@@ -1,0 +1,6 @@
+functie hoofd() {
+    Getal a = 1;
+    terwijl (a > 0) {
+        Getal b = 0;
+    }
+}

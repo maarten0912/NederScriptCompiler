@@ -11,6 +11,8 @@ public class NederScriptResult {
     /** Mapping from variables to coordinates. */
     private final ParseTreeProperty<Integer> offsets = new ParseTreeProperty<>();
 
+    private Integer numThreads = 1;
+
     /** Adds an association from a parse tree node containing a
      * variable reference to the offset
      * of that variable. */
@@ -33,5 +35,13 @@ public class NederScriptResult {
     /** Returns the type associated with a given parse tree node. */
     public NederScriptType getType(ParseTree node) {
         return this.types.get(node);
+    }
+
+    public void addThread() {
+        numThreads++;
+    }
+
+    public Integer getNumThreads() {
+        return numThreads;
     }
 }

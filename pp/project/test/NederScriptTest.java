@@ -3,6 +3,7 @@ package pp.project.test;
 import org.junit.Test;
 
 import org.antlr.v4.runtime.tree.ParseTree;
+import org.junit.runners.model.TestTimedOutException;
 import pp.project.build.NederScriptCompiler;
 import pp.project.elaboration.NederScriptResult;
 import pp.project.exception.ParseException;
@@ -96,8 +97,43 @@ public class NederScriptTest {
 
     @Test
     public void testSemantics() {
-
+        try {
+            List<String> a = new ArrayList<>();
+            a.add("Hallo wereld!");
+            runSucces("testprint.ns", a);
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
     }
+
+    @Test(timeout = 1000)
+    public void testInfiniteLoop() {
+        try {
+            runSucces("testinfinite.ns", null);
+        } catch (IOException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    
+    private void runSucces(String filename, List<String> expected) throws IOException {
+        try {
+            System.out.println("\n" + ANSI_GREEN + "Testing file '" + filename + "' for runtime errors." + ANSI_RESET + "\n");
+
+            List <String> out = run(filename, "pp/project/test/semantic/");
+
+            if (expected.size() > 0) {
+                for (int i = 0; i < expected.size(); i++) {
+                    assertEquals(expected.get(i), out.get(i));
+                }
+            }
+
+        } catch (ParseException exc) {
+            exc.print();
+            fail (filename + " could not compile.");
+        }
+    }
+    
 
     private void syntaxSucces(String filename) throws IOException {
         try {
@@ -139,6 +175,10 @@ public class NederScriptTest {
         } catch (ParseException exc) {
             exc.print();
         }
+    }
+
+    private List<String> run(String filename, String dir) throws ParseException {
+        return this.compiler.run(filename, dir, false);
     }
 
     private ParseTree parse(String filename) throws IOException, ParseException {

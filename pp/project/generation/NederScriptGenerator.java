@@ -694,6 +694,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
         prog.addInstruction(new NederScriptInstruction.EndProg());
 
+
+
         prog.incrementThreadNumber();
         // These two lines are already default, but it is just for demonstration purposes
         prog.setDebugMode(false);

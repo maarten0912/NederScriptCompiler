@@ -19,11 +19,13 @@ public class NederScriptChecker extends NederScriptBaseListener {
     private List<String> errors;
     private NederScriptResult result;
     private ScopeTable st;
+    private ScopeTable globalSt;
 
     public NederScriptResult check(ParseTree tree) throws ParseException {
         this.result = new NederScriptResult();
         this.errors = new ArrayList<>();
         this.st = new ScopeTable();
+        this.globalSt = new ScopeTable();
 
         new NederScriptFunctionListener().check(this,tree, st);
         new ParseTreeWalker().walk(this, tree);
@@ -46,6 +48,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void enterFunction(NederScriptParser.FunctionContext ctx) {
         st.openScope();
+        globalSt.openScope();
         if (ctx.COLON() != null) {
             // A return type is supplied
             for (int i = 0; i < ctx.type().size() - 1; i++) {
@@ -64,16 +67,19 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void exitFunction(NederScriptParser.FunctionContext ctx) {
         st.closeScope();
+        globalSt.closeScope();
     }
 
     @Override
     public void enterNewScopeInst(NederScriptParser.NewScopeInstContext ctx) {
         st.openScope();
+        globalSt.openScope();
     }
 
     @Override
     public void exitNewScopeInst(NederScriptParser.NewScopeInstContext ctx) {
         st.closeScope();
+        globalSt.closeScope();
     }
 
     @Override
@@ -194,14 +200,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
     }
 
     @Override
-    public void enterForIn(NederScriptParser.ForInContext ctx) {
-        String var = ctx.VAR().getText();
-        NederScriptType type = typeContextToNederScriptType(ctx.type());
-        this.st.add(var, type);
-        setOffset(ctx, this.st.getOffset(var));
-    }
-
-    @Override
     public void exitIfelse(NederScriptParser.IfelseContext ctx) {
         if (getType(ctx.expr()) != NederScriptType.BOOLEAANS) {
             addError(ctx, "If statement requires Booleaans type: '%s', found type '%s'", ctx.expr().getText(), getType(ctx.expr()));
@@ -211,32 +209,40 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void enterIfelseInst(NederScriptParser.IfelseInstContext ctx) {
         st.openScope();
+        globalSt.openScope();
     }
 
     @Override
     public void exitIfelseInst(NederScriptParser.IfelseInstContext ctx) {
         st.closeScope();
+        globalSt.closeScope();
     }
 
     @Override
     public void enterWhileInst(NederScriptParser.WhileInstContext ctx) {
         st.openScope();
+        globalSt.openScope();
     }
 
     @Override
     public void exitWhileInst(NederScriptParser.WhileInstContext ctx) {
         st.closeScope();
+        globalSt.closeScope();
     }
 
     @Override
     public void enterForInst(NederScriptParser.ForInstContext ctx) {
         st.openScope();
+        globalSt.openScope();
     }
 
     @Override
     public void exitForInst(NederScriptParser.ForInstContext ctx) {
         st.closeScope();
+        globalSt.closeScope();
     }
+
+
 
     @Override
     public void exitVarExpr(NederScriptParser.VarExprContext ctx) {
@@ -345,6 +351,10 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 addError(ctx, "Variable '%s' not declared", varName);
             }
         }
+
+        int off = this.st.getOffset(ctx.VAR(0).getText());
+        setOffset(ctx, off);
+
     }
 
     @Override

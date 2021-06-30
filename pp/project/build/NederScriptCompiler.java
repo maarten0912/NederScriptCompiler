@@ -39,51 +39,8 @@ public class NederScriptCompiler {
     }
 
     /**
-     * Function to run the compiler from another place
-     * @param file
-     * @param debugMode
-     */
-    public void main(String file) {
-        String filename = file;
-        try {
-            System.out.println("--- Compiling " + filename);
-            NederScriptProgram prog = instance().compile(new File("pp/project/" + filename));
-            prog.prettyPrint();
-            SprockellBuilder sprockell = prog.toHaskell();
-            System.out.println("\n--- Finished compiling " + filename);
-
-
-            filename = filename.split(".ns")[0];
-            String filenamehs = filename + ".hs";
-
-            new HaskellRunner().run("pp/project/" + filenamehs,sprockell);
-
-            System.out.println("\n--- Created haskell file "+ filenamehs);
-
-            Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename,null,new File("pp/project"));
-
-            System.out.println("\n--- Created executable out/"+ filename + ".exe");
-            BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-
-            String line;
-
-            if ((line = errors.readLine()) != null) {
-                // TODO error?
-                System.out.println("\nHaskell error:");
-                System.out.println(line);
-                while ((line = errors.readLine()) != null) {
-                    System.out.println(line);
-                }
-            }
-        } catch (ParseException exc) {
-            exc.print();
-        } catch (IOException exc) {
-            exc.printStackTrace();
-        }
-    }
-
-    /**
      * Function to run the compiler
+     *
      * @param args
      */
     public static void main(String[] args) {
@@ -105,7 +62,7 @@ public class NederScriptCompiler {
             filename = filename.split(".ns")[0];
             String filenamehs = filename + ".hs";
 
-            new HaskellRunner().run("pp/project/" + filenamehs,sprockell);
+            new HaskellRunner().run("pp/project/" + filenamehs, sprockell);
 
             System.out.println("\n--- Created haskell file " + filenamehs);
 
@@ -149,6 +106,61 @@ public class NederScriptCompiler {
     }
 
 
+    public List<String> run(String filename, String dir, Boolean show) throws ParseException {
+        List<String> lines = new ArrayList<>();
+        try {
+            if (show)
+                System.out.println("--- Compiling " + filename);
+
+            NederScriptProgram prog = instance().compile(new File(dir + filename));
+            SprockellBuilder sprockell = prog.toHaskell();
+
+            if (show)
+                System.out.println("\n--- Finished compiling " + filename);
+
+            filename = filename.split(".ns")[0];
+            String filenamehs = filename + ".hs";
+
+            new HaskellRunner().run(dir + filenamehs, sprockell);
+
+            if (show)
+                System.out.println("\n--- Created haskell file " + filenamehs);
+
+            if (show)
+                System.out.println("\n--- Running executable '" + filename + "'\n");
+
+            Process p = Runtime.getRuntime().exec("runhaskell " + filenamehs, null, new File(dir));
+
+
+            BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+            String line;
+
+            if ((line = errors.readLine()) != null && show) {
+                // TODO error?
+                System.out.println("\nHaskell error:");
+                System.out.println(line);
+                while ((line = errors.readLine()) != null) {
+                    System.out.println(line);
+                }
+            }
+
+
+            BufferedReader output = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            while ((line = output.readLine()) != null) {
+                if (show)
+                    System.out.println(line);
+                lines.add(line);
+            }
+
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
+
+        return lines;
+    }
+
     public NederScriptProgram compile(String text) throws ParseException {
         return compile(parse(text));
     }
@@ -176,11 +188,11 @@ public class NederScriptCompiler {
     }
 
 
-    public ParseTree parse (String text) throws ParseException {
+    public ParseTree parse(String text) throws ParseException {
         return parse(CharStreams.fromString(text));
     }
 
-    public ParseTree parse (File file) throws IOException, ParseException {
+    public ParseTree parse(File file) throws IOException, ParseException {
         return parse(CharStreams.fromPath(file.toPath()));
     }
 
