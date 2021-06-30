@@ -1,2 +1,0 @@
-if (! found) { i = i + 1; }
-printf("Index: %d%n", i);

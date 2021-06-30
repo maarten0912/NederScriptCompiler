@@ -1,5 +1,9 @@
 functie hoofd() {
-    Getal a = 5
+    publiek Touw<4> a = "test";
     afdrukken(a);
 }
+
+
+
+
 

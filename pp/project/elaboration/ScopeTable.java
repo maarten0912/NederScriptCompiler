@@ -11,7 +11,14 @@ public class ScopeTable {
     }
 
     public void openScope() {
-        stack.push(new NederScriptScope());
+        int stackSize = 0;
+        if (stack.peek() != null) {
+            stackSize = stack.peek().getSize();
+
+        }
+        NederScriptScope newScope = new NederScriptScope();
+        newScope.setSize(stackSize);
+        stack.push(newScope);
     }
 
     public void closeScope() {
@@ -54,10 +61,10 @@ public class ScopeTable {
         return null;
     }
 
-    public void printTypeContents() {
+    public void printScopeTableContents() {
         for (NederScriptScope s : stack) {
             System.out.println("====scope=====");
-            s.printTypes();
+            s.printContents();
         }
     }
 }

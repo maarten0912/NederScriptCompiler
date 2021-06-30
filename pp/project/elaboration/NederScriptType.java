@@ -10,12 +10,6 @@ abstract public class NederScriptType {
     /** Singleton instance of Getal type. */
     public static final NederScriptType GETAL = new Getal();
 
-    /** Singleton instance of Touw type. */
-    public static final NederScriptType TOUW = new Touw();
-
-    /** Singleton instance of Draad type. */
-    public static final NederScriptType DRAAD = new Draad();
-
     /** Singleton instance of Leegte type. */
     public static final NederScriptType LEEGTE = new Leegte();
 
@@ -33,7 +27,7 @@ abstract public class NederScriptType {
 
         @Override
         public int size() {
-            return 4;
+            return 1;
         }
 
         @Override
@@ -47,7 +41,7 @@ abstract public class NederScriptType {
 
         @Override
         public int size() {
-            return 4;
+            return 1;
         }
 
         @Override
@@ -61,7 +55,7 @@ abstract public class NederScriptType {
 
         @Override
         public int size() {
-            return 4;
+            return 1;
         }
 
         @Override
@@ -72,21 +66,25 @@ abstract public class NederScriptType {
     /** Reeks type */
     static public class Reeks extends NederScriptType {
         private final NederScriptType elemType;
+        private final int length;
 
-        public Reeks (NederScriptType elemType) {
+        public Reeks (NederScriptType elemType, Integer length) {
             super(NederScriptTypeKind.REEKS);
             this.elemType = elemType;
+            this.length = length;
         }
 
         public NederScriptType getElemType() { return this.elemType; }
 
         @Override
         public int size() {
-            return 4;
+            return 1 + this.length;
         }
 
         @Override
-        public String toString() {return "Reeks of type " + getElemType(); }
+        public String toString() {
+            return "Reeks<" + getElemType() + ">";
+        }
 
         @Override
         public boolean equals(Object obj) {
@@ -108,16 +106,17 @@ abstract public class NederScriptType {
     /** Touw type */
     static public class Touw extends NederScriptType {
 
+        private final int length;
 
-        public Touw() {
+        public Touw(Integer length) {
             super(NederScriptTypeKind.TOUW);
+            this.length = length;
         }
 
-        public Integer getLength() { return 4; }
 
         @Override
         public int size() {
-            return 4 * (getLength() + 1);
+            return 1 + this.length;
         }
 
         @Override
@@ -136,22 +135,6 @@ abstract public class NederScriptType {
 
     }
 
-    /** Draad type */
-    static public class Draad extends NederScriptType {
-
-        private Draad() {
-            super(NederScriptTypeKind.DRAAD);
-        }
-
-        @Override
-        public int size() {
-            return 4;
-        }
-
-        @Override
-        public String toString() {return "Draad"; }
-
-    }
 
     /** Leegte type */
     // This is the return type of void functions
@@ -159,7 +142,7 @@ abstract public class NederScriptType {
         private Leegte() { super(NederScriptTypeKind.LEEGTE); }
 
         @Override
-        public int size() { return 4; }
+        public int size() { return 0; }
 
         @Override
         public String toString() {return "Leegte"; }

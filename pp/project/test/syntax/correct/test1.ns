@@ -1,5 +1,5 @@
 functie hoofd() {
-    publiek Reeks<Getal> lijst = [1,2,3];
+    publiek Reeks<Getal><3> lijst = [1,2,3];
 
     Draad d1 = draad(print_lijst(lijst));
     ren(d1);

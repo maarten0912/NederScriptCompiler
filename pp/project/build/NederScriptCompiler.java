@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -91,24 +93,26 @@ public class NederScriptCompiler {
         } else {
             filename = args[0];
         }
+
         try {
             System.out.println("--- Compiling " + filename);
-            NederScriptProgram prog = instance().compile(new File("pp/project/" + filename));
-            prog.prettyPrint();
-            SprockellBuilder sprockell = prog.toHaskell();
-            System.out.println("\n--- Finished compiling " + filename);
 
+            NederScriptProgram prog = instance().compile(new File("pp/project/" + filename));
+            SprockellBuilder sprockell = prog.toHaskell();
+
+            System.out.println("\n--- Finished compiling " + filename);
 
             filename = filename.split(".ns")[0];
             String filenamehs = filename + ".hs";
 
             new HaskellRunner().run("pp/project/" + filenamehs,sprockell);
 
-            System.out.println("\n--- Created haskell file "+ filenamehs);
+            System.out.println("\n--- Created haskell file " + filenamehs);
 
-            Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename,null,new File("pp/project"));
+            Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename, null, new File("pp/project/"));
 
-            System.out.println("\n--- Created executable out/"+ filename + ".exe");
+            System.out.println("\n--- Created executable out/" + filename + ".exe");
+
             BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
             String line;
@@ -121,11 +125,27 @@ public class NederScriptCompiler {
                     System.out.println(line);
                 }
             }
-        } catch (ParseException exc) {
-            exc.print();
+
+            p.waitFor();
+
+            System.out.println("\n--- Running executable '" + filename + ".exe' \n");
+
+            Process execute = Runtime.getRuntime().exec("pp/project/out/" + filename + ".exe");
+
+            BufferedReader output = new BufferedReader(new InputStreamReader(execute.getInputStream()));
+
+            while ((line = output.readLine()) != null) {
+                System.out.println(line);
+            }
+
         } catch (IOException exc) {
             exc.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
         }
+
     }
 
 

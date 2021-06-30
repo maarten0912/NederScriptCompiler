@@ -1,3 +1,0 @@
-lexer grammar PLIString;
-
-STRING : '"' (~'"' | '""')* '"';

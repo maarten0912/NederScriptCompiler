@@ -1,6 +1,0 @@
-lexer grammar Identifiers;
-
-fragment ALPHANUMERIC : ('a'..'z'|'A'..'Z'|'0'..'9');
-fragment ALPHABETIC : ('a'..'z'|'A'..'Z');
-
-IDENTIFIER : ALPHABETIC ALPHANUMERIC ALPHANUMERIC ALPHANUMERIC ALPHANUMERIC ALPHANUMERIC;

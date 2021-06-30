@@ -53,9 +53,17 @@ public class NederScriptScope {
         return this.offsets.get(id);
     }
 
-    public void printTypes() {
+    public Integer getSize() {
+        return this.size;
+    }
+
+    public void setSize(Integer i) {
+        this.size = i;
+    }
+
+     public void printContents() {
         for (String s : this.types.keySet()) {
-            System.out.println("Variable: '" + s + "'\t\tType: '" + this.types.get(s) + "'");
+            System.out.println("Variable: '" + s + "'\t\t\tType: '" + this.types.get(s) + "'\t\t\tOffset: '" + this.offsets.get(s) + "'");
         }
     }
 }

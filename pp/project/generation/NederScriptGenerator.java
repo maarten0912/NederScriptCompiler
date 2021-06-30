@@ -1,17 +1,9 @@
 package pp.project.generation;
 
-import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.ParseTreeProperty;
-import pp.iloc.model.Label;
-import pp.iloc.model.Reg;
-import pp.project.elaboration.NederScriptBaseVisitor;
-import pp.project.elaboration.NederScriptParser;
-import pp.project.elaboration.NederScriptResult;
-import pp.project.elaboration.NederScriptType;
+import pp.project.elaboration.*;
 import pp.project.exception.ParseException;
 
-import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,32 +12,31 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     private List<String> errs = new ArrayList<>();
     private NederScriptResult result;
     private NederScriptProgram prog;
-    /** Register count, used to generate fresh registers. */
-    private int regCount;
-    /** Association of expression and target nodes to registers. */
-    private ParseTreeProperty<Reg> regs;
-    /** Association of statement nodes to labels. */
-    private ParseTreeProperty<Label> labels;
+    private ScopeTable st;
+
 
     public NederScriptProgram generate(ParseTree tree, NederScriptResult result) throws ParseException {
         this.result = result;
         this.prog = new NederScriptProgram();
-        this.regs = new ParseTreeProperty<>();
-        this.labels = new ParseTreeProperty<>();
-        this.regCount = 0;
+        this.st = new ScopeTable();
         this.prog.addInstructions(tree.accept(this));
 //        this.makeFibonacci();
         if (errs.size() > 0) {
             throw new ParseException(errs);
         }
+        this.prog.setDebugMode(false);
         return this.prog;
     }
 
     @Override
     public List<NederScriptInstruction> visitProgram(NederScriptParser.ProgramContext ctx) {
-        System.out.println("Visit program");
-
         List<NederScriptInstruction> instList = new ArrayList<>();
+
+        //TODO: not best solution, fix another way
+        //Put something in first mem address because the length in-built function is supposed to be there
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),2));
+        instList.add(new NederScriptInstruction.Store(2, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
+
 
         for (NederScriptParser.FunctionContext f : ctx.function()) {
             if (f.VAR(0).getText().equals("hoofd")) {
@@ -61,9 +52,9 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitFunction(NederScriptParser.FunctionContext ctx) {
-        System.out.println("Visit function");
         //TODO put function args on stack
         //TODO create new AR
+        this.st.openScope();
         List<NederScriptInstruction> instList = new ArrayList<>();
         for (NederScriptParser.InstructionContext i : ctx.instruction()) {
             List<NederScriptInstruction> newList = visit(i);
@@ -71,12 +62,12 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.addAll(newList);
             }
         }
+        this.st.closeScope();
         return instList;
     }
 
     @Override
     public List<NederScriptInstruction> visitNormalInst(NederScriptParser.NormalInstContext ctx) {
-        System.out.println("Visit normal instruction");
         //TODO put function args on stack
 
         return visit(ctx.statement());
@@ -84,58 +75,325 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitIfelseInst(NederScriptParser.IfelseInstContext ctx) {
-        //TODO
-        return null;
+        this.st.openScope();
+        List<NederScriptInstruction> instList = visit(ctx.ifelse());
+        this.st.closeScope();
+        return instList;
     }
 
     @Override
     public List<NederScriptInstruction> visitWhileInst(NederScriptParser.WhileInstContext ctx) {
-        //TODO
-        return null;
+        this.st.openScope();
+        List<NederScriptInstruction> instList = visit(ctx.whileS());
+        this.st.closeScope();
+        return instList;
     }
 
     @Override
     public List<NederScriptInstruction> visitForInst(NederScriptParser.ForInstContext ctx) {
-        //TODO
-        return null;
+        this.st.openScope();
+        List<NederScriptInstruction> instList = visit(ctx.forS());
+        this.st.closeScope();
+        return instList;
     }
 
     @Override
     public List<NederScriptInstruction> visitNewScopeInst(NederScriptParser.NewScopeInstContext ctx) {
-        //TODO
-        return null;
+        this.st.openScope();
+        List<NederScriptInstruction> instList = new ArrayList<>();
+        for (NederScriptParser.StatementContext s : ctx.statement()) {
+            List<NederScriptInstruction> newList = visit(s);
+            if (newList != null) {
+                instList.addAll(newList);
+            }
+        }
+        this.st.closeScope();
+        return instList;
     }
 
     @Override
     public List<NederScriptInstruction> visitAssignStat(NederScriptParser.AssignStatContext ctx) {
-        //TODO
-        return null;
+        return visit(ctx.assign());
     }
 
     @Override
     public List<NederScriptInstruction> visitDeclStat(NederScriptParser.DeclStatContext ctx) {
-        //TODO
-        return null;
+        return visit(ctx.decl());
     }
 
     @Override
     public List<NederScriptInstruction> visitReturnStat(NederScriptParser.ReturnStatContext ctx) {
-        //TODO
-        return null;
+        return visit(ctx.returnS());
     }
 
 
     @Override
     public List<NederScriptInstruction> visitFunctionCallStat(NederScriptParser.FunctionCallStatContext ctx) {
-        System.out.println("Visit function call statement");
-        //TODO put function args on stack
-
         return visit(ctx.funCall());
     }
 
     @Override
+    public List<NederScriptInstruction> visitIfelse(NederScriptParser.IfelseContext ctx) {
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+        instList.addAll(visit(ctx.expr())); // condition
+
+        List<NederScriptInstruction> ifI = new ArrayList<>();
+        List<NederScriptInstruction> elseI = new ArrayList<>();
+
+        Boolean toElse = false;
+        for (int i = 0; i < ctx.getChildCount(); i++) {
+            if (ctx.getChild(i) == ctx.ELSE()) {
+                toElse = true;
+            }
+            if (ctx.instruction().contains(ctx.getChild(i))) {
+                if (toElse) {
+                    ifI.addAll(visit(ctx.getChild(i)));
+                } else {
+                    elseI.addAll(visit(ctx.getChild(i)));
+                }
+            }
+        }
+
+        instList.add(new NederScriptInstruction.Pop(2));
+        instList.add(new NederScriptInstruction.Branch(2,new NederScriptTarget.Rel(ifI.size() + 2)));
+
+        instList.addAll(ifI);
+
+        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(elseI.size() + 1)));
+
+        instList.addAll(elseI);
+
+        return instList;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitWhileS(NederScriptParser.WhileSContext ctx) {
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+        List<NederScriptInstruction> exprI = visit(ctx.expr());
+
+        instList.addAll(exprI); // condition
+
+        List<NederScriptInstruction> loopI = new ArrayList<>();
+
+        for (NederScriptParser.InstructionContext ic : ctx.instruction()) {
+            loopI.addAll(visit(ic));
+        }
+
+        instList.add(new NederScriptInstruction.Pop(2));
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1), 3));
+        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 3, 2, 2));
+        instList.add(new NederScriptInstruction.Branch(2,new NederScriptTarget.Rel(loopI.size() + 2)));
+
+        instList.addAll(loopI);
+
+        System.out.println(exprI.size());
+
+        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-loopI.size() - exprI.size() - 4)));
+
+        return instList;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitForS(NederScriptParser.ForSContext ctx) {
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+        if (ctx.decl() != null) {
+            instList.addAll(visit(ctx.decl()));
+        } else {
+            instList.addAll(visit(ctx.assign()));
+        }
+
+        List<NederScriptInstruction> exprI = visit(ctx.expr());
+        instList.addAll(exprI); // condition
+
+        List<NederScriptInstruction> loopI = new ArrayList<>();
+
+        for (NederScriptParser.InstructionContext ic : ctx.instruction()) {
+            loopI.addAll(visit(ic));
+        }
+
+        List<NederScriptInstruction> incrI = visit(ctx.statement());
+
+        instList.add(new NederScriptInstruction.Pop(2));
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1), 3));
+        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 3, 2, 2));
+        instList.add(new NederScriptInstruction.Branch(2,new NederScriptTarget.Rel(loopI.size() + incrI.size() + 2)));
+
+        instList.addAll(loopI);
+
+        instList.addAll(incrI);
+
+        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-loopI.size() - exprI.size() - incrI.size() - 4)));
+
+        return instList;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitAssign(NederScriptParser.AssignContext ctx) {
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+        instList.addAll(visit(ctx.expr()));
+        NederScriptType type = this.result.getType(ctx.expr());
+        if (type instanceof NederScriptType.Touw) {
+
+        } else if (type instanceof NederScriptType.Reeks) {
+            //TODO
+        } else {
+            instList.add(new NederScriptInstruction.Pop(2));
+            instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+        }
+        return instList;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitNonTypedDecl(NederScriptParser.NonTypedDeclContext ctx) {
+        //TODO
+        return null;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitTypedDecl(NederScriptParser.TypedDeclContext ctx) {
+        //TODO test
+        System.out.println(String.format("Variable %s has offset %s", ctx.VAR().getText(), this.result.getOffset(ctx)));
+        List<NederScriptInstruction> instList = new ArrayList<>();
+        instList.addAll(visit(ctx.expr()));
+        NederScriptType type = this.result.getType(ctx.expr());
+        if (type instanceof NederScriptType.Touw) {
+            // regA: stringlength
+            instList.add(new NederScriptInstruction.Pop(2));
+            // regB: just the value 1
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
+            // regC: offset
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 4));
+            // regD: string length + 1
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 5));
+            // string length + 1 -> mem(offset)
+            instList.add(new NederScriptInstruction.Store(5, new NederScriptAddrImmDI.NederScriptIndAddr(4)));
+            // offset++
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 4, 3, 4));
+
+            instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(5)));
+            // get next character
+            instList.add(new NederScriptInstruction.Pop(5));
+            instList.add(new NederScriptInstruction.Store(5, new NederScriptAddrImmDI.NederScriptIndAddr(4)));
+
+            // offset := offset + 1
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 4, 3, 4));
+            // stringlength := stringlength - 1
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 2, 3, 2));
+
+            // if stringlength != 0, jump back
+            instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-4)));
+        } else if (type instanceof NederScriptType.Reeks) {
+            //TODO
+        } else {
+            instList.add(new NederScriptInstruction.Pop(2));
+            instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+        }
+        return instList;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitReturnS(NederScriptParser.ReturnSContext ctx) {
+        //TODO
+        return null;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitFunCall(NederScriptParser.FunCallContext ctx) {
+        List<NederScriptInstruction> instList = new ArrayList<>();
+        String functionName = ctx.VAR().getText();
+        switch (functionName) {
+            case "afdrukken":
+                NederScriptType type = result.getType(ctx.expr(0));
+                if (type instanceof NederScriptType.Touw) {
+                    List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
+                    if (exprIns != null) {
+                        instList.addAll(exprIns);
+                    }
+                    //regA has pointer to the string
+//                    instList.add(new NederScriptInstruction.Pop(2));
+                    //regB has length+1 of the string
+//                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2),3));
+                    //Put value 1 in regC
+//                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),4));
+                    //Decrease regB to make it the length
+//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 3, 4, 3));
+                    //Check if regB is 0, put this in regD
+//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 3, 0, 5));
+                    //Branch if regB is 0
+//                    instList.add(new NederScriptInstruction.Branch(5, new NederScriptTarget.Rel(6)));
+                    //Increment regA
+//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 4,2));
+                    //Print memory location of regA
+//                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2),6));
+//                    instList.add(new NederScriptInstruction.WriteInstr(6, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
+                    //Decrement regB
+//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 3, 4, 3));
+//                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-6)));
+
+                    instList.add(new NederScriptInstruction.Pop(2));
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
+
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(4)));
+
+                    instList.add(new NederScriptInstruction.Pop(4));
+
+                    instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
+
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 2, 3, 2));
+
+                    // if sLen != 0, jump
+                    instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-3)));
+
+                    instList.addAll(createPrintString("\n"));
+
+                } else if (type.equals(NederScriptType.GETAL)) {
+
+                    List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
+                    if (exprIns != null) {
+                        instList.addAll(exprIns);
+                    }
+
+                    instList.add(new NederScriptInstruction.Pop(2));
+                    instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
+
+                } else if (type.equals(NederScriptType.BOOLEAANS)) {
+                    List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
+                    if (exprIns != null) {
+                        instList.addAll(exprIns);
+                    }
+                    instList.add(new NederScriptInstruction.Pop(2));
+                    instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(2 + 7*2)));
+                    instList.addAll(createPrintString("onwaar\n"));
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(1 + 5*2)));
+                    instList.addAll(createPrintString("waar\n"));
+                } else {
+                    errs.add("Incorrect type for function 'afdrukken'. Expected TOUW, GETAL or BOOLEAANS but found " + type);
+                }
+                break;
+            case "lengte":
+                //TODO
+                break;
+            default:
+                //TODO
+                break;
+
+        }
+
+        return instList;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitType(NederScriptParser.TypeContext ctx) {
+        //TODO
+        return null;
+    }
+
+    @Override
     public List<NederScriptInstruction> visitPlusExpr(NederScriptParser.PlusExprContext ctx) {
-        System.out.println("Visit plus expr");
         List<NederScriptInstruction> newInst = new ArrayList<>();
         newInst.addAll(visit(ctx.expr(0)));
         newInst.addAll(visit(ctx.expr(1)));
@@ -159,8 +417,38 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitVarExpr(NederScriptParser.VarExprContext ctx) {
-        //TODO
-        return null;
+        //TODO array
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+        NederScriptType type = this.result.getType(ctx);
+        if (type instanceof NederScriptType.Touw) {
+            // offset -> regA
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)),2));
+            // strLen + 1 -> regB
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2),3));
+            // offset + strLen -> regB
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add,2,3,3));
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr,3,0,3));
+
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.GtE, 2, 3, 4));
+            instList.add(new NederScriptInstruction.Branch(4, new NederScriptTarget.Rel(5)));
+
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(3),5));
+            instList.add(new NederScriptInstruction.Push(5));
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr,3,0,3));
+
+            instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-5)));
+
+//            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr,3,0,3));
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(3),5));
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr,5,0,5));
+            instList.add(new NederScriptInstruction.Push(5));
+
+        } else {
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
+            instList.add(new NederScriptInstruction.Push(2));
+        }
+        return instList;
     }
 
     @Override
@@ -194,7 +482,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitMultExpr(NederScriptParser.MultExprContext ctx) {
-        System.out.println("Visit mult expr");
         List<NederScriptInstruction> newInst = new ArrayList<>();
         newInst.addAll(visit(ctx.expr(0)));
         newInst.addAll(visit(ctx.expr(1)));
@@ -294,8 +581,46 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitStringPrimitive(NederScriptParser.StringPrimitiveContext ctx) {
-        //TODO put string on heap
-        return null;
+        String s = ctx.getText().split("\"",3)[1];
+        Integer sLen = s.length();
+        List<NederScriptInstruction> instList = new ArrayList<>();
+        //Length of size in regA
+//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(-1), 2));
+        //regB with 1
+//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
+//        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
+        //Load mem(0) in regC
+//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 4));
+//        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 4, 2));
+
+        //If regC is not 0, jump
+//        instList.add(new NederScriptInstruction.Branch(4, new NederScriptTarget.Rel(-3)));
+
+        //If we reach this, we have found an empty spot on the heap, beginning at mem(regA)
+        //Store size in regD
+//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(sLen + 1), 5));
+//        instList.add(new NederScriptInstruction.Store(5, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
+
+        //Put pointer on the stack
+//        instList.add(new NederScriptInstruction.Push(2));
+
+//        for (int i = 0; i < sLen; i++) {
+//            Integer c = (int) s.charAt(i);
+//            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(c), 4));
+//            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3,2));
+//            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
+//        }
+
+        // -- new version --
+
+        for (int i = sLen - 1; i >= 0; i--) {
+            Integer c = (int) s.charAt(i);
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(c), 2));
+            instList.add(new NederScriptInstruction.Push(2));
+        }
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(sLen), 2));
+        instList.add(new NederScriptInstruction.Push(2));
+        return instList;
     }
 
     @Override
@@ -335,51 +660,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
-    @Override
-    public List<NederScriptInstruction> visitFunCall(NederScriptParser.FunCallContext ctx) {
-        System.out.println("Visit func call");
-        List<NederScriptInstruction> instList = new ArrayList<>();
-        String functionName = ctx.VAR().getText();
-        switch (functionName) {
-            case "afdrukken":
-                NederScriptType type = result.getType(ctx.expr(0));
-                if (type.equals(NederScriptType.TOUW)) {
-                    //TODO
-                } else if (type.equals(NederScriptType.GETAL)) {
 
-                    List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
-                    if (exprIns != null) {
-                        instList.addAll(exprIns);
-                    }
 
-                    instList.add(new NederScriptInstruction.Pop(2));
-                    instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
-
-                } else if (type.equals(NederScriptType.BOOLEAANS)) {
-                    List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
-                    if (exprIns != null) {
-                        instList.addAll(exprIns);
-                    }
-                    instList.add(new NederScriptInstruction.Pop(2));
-                    instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(2 + 7*2)));
-                    instList.addAll(createPrintString("onwaar\n"));
-                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(1 + 5*2)));
-                    instList.addAll(createPrintString("waar\n"));
-                } else {
-                    errs.add("Incorrect type for function 'afdrukken'. Expected TOUW, GETAL or BOOLEAANS but found " + type);
-                }
-                break;
-            case "lengte":
-                //TODO
-                break;
-            default:
-                //TODO
-                break;
-
-        }
-
-        return instList;
-    }
 
     public List<NederScriptInstruction> createPrintString(String s) {
         List<NederScriptInstruction> instList = new ArrayList<>();
