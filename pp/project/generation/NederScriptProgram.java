@@ -59,11 +59,16 @@ public class NederScriptProgram {
         this.instList.addAll(insts);
     }
 
+    public void setInstList(List<NederScriptInstruction> instList) {
+        this.instList = instList;
+    }
+
     public void prettyPrint() {
         for (NederScriptInstruction i : instList) {
             System.out.println(i);
         }
     }
+
 
     public void incrementThreadNumber() {
         this.threadNumber++;
@@ -71,6 +76,10 @@ public class NederScriptProgram {
 
     public Integer getThreadNumber() {
         return this.threadNumber;
+    }
+
+    public void setThreadNumber(Integer num) {
+        this.threadNumber = num;
     }
 
     public Boolean getDebugMode() {
@@ -98,7 +107,7 @@ public class NederScriptProgram {
     }
 
     public List<NederScriptInstruction> getInstructions() {
-        return instList;
+        return this.instList;
     }
 
 }

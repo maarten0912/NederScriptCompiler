@@ -1,6 +1,11 @@
 functie hoofd() {
-    publiek Touw<4> a = "test";
-    afdrukken(a);
+    Getal a = 1;
+    draad {
+        voor (Getal i = 0; i < 10; i = i + 1) {
+            afdrukken (i);
+        }
+    }
+    afdrukken("ik ben main thread");
 }
 
 

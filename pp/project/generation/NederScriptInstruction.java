@@ -56,7 +56,7 @@ abstract public class NederScriptInstruction {
     }
 
     static public class Branch extends NederScriptInstruction {
-        Integer regAddr;
+        String regAddr;
         NederScriptTarget target;
 
         /**
@@ -66,6 +66,12 @@ abstract public class NederScriptInstruction {
          * @param t
          */
         public Branch(Integer r, NederScriptTarget t) {
+            super(NederScriptInstructionKind.Jump);
+            this.regAddr = r.toString();
+            this.target = t;
+        }
+
+        public Branch(String r, NederScriptTarget t) {
             super(NederScriptInstructionKind.Jump);
             this.regAddr = r;
             this.target = t;

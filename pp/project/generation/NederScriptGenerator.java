@@ -19,6 +19,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         this.result = result;
         this.prog = new NederScriptProgram();
         this.st = new ScopeTable();
+        this.prog.setThreadNumber(result.getNumThreads());
         this.prog.addInstructions(tree.accept(this));
 //        this.makeFibonacci();
         if (errs.size() > 0) {
@@ -292,6 +293,33 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             instList.add(new NederScriptInstruction.Pop(2));
             instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
         }
+        return instList;
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitThreadInst(NederScriptParser.ThreadInstContext ctx) {
+        return visit(ctx.thread());
+    }
+
+    @Override
+    public List<NederScriptInstruction> visitThread(NederScriptParser.ThreadContext ctx) {
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+
+        List<NederScriptInstruction> bodyI = new ArrayList<>();
+
+        for (NederScriptParser.InstructionContext ic : ctx.instruction()) {
+            bodyI.addAll(visit(ic));
+        }
+
+        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(bodyI.size() + 2)));
+
+        addThreadBranch(1,8);
+
+        instList.addAll(bodyI);
+
+        instList.add(new NederScriptInstruction.EndProg());
+
         return instList;
     }
 
@@ -660,6 +688,15 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
+    public void addThreadBranch(Integer threadID, Integer jumpAddr) {
+        Integer jump = prog.getInstructions().size() + jumpAddr;
+
+        List<NederScriptInstruction> instList = this.prog.getInstructions();
+
+        instList.add(0, new NederScriptInstruction.Branch("regSprID", new NederScriptTarget.Rel(jump)));
+
+        this.prog.setInstList(instList);
+    }
 
 
 
