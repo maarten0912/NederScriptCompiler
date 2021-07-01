@@ -1,11 +1,9 @@
 functie hoofd() {
-    Getal a = 1;
+
     draad {
-        voor (Getal i = 0; i < 10; i = i + 1) {
-            afdrukken (i);
-        }
+        afdrukken(1);
     }
-    afdrukken("ik ben main thread");
+    afdrukken(2);
 }
 
 

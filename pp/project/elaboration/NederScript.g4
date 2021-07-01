@@ -50,7 +50,7 @@ funCall: VAR LPAR (expr (COMMA expr)*)? RPAR;
 /** Primitive values **/
 primitive: STR                                                      #stringPrimitive
          | CHR                                                      #characterPrimitive
-         | LBRACK (primitive|VAR) (COMMA (primitive|VAR))* RBRACK   #arrayPrimitive
+         | LBRACK ((primitive|VAR) (COMMA (primitive|VAR))*)? RBRACK   #arrayPrimitive
          | NUM                                                      #integerPrimitive
          | (TRUE | FALSE)                                           #booleanPrimitive
          ;

@@ -267,12 +267,19 @@ public class NederScriptChecker extends NederScriptBaseListener {
             // this var is a list and an index is supplied
 
             NederScriptType resType = this.st.getType(ctx.VAR(0).getText());
-
             for (int i = 1; i < ctx.VAR().size(); i++) {
                 NederScriptType type = this.st.getType(ctx.VAR(i).getText());
                 if (!type.equals(NederScriptType.GETAL)) {
                     addError((ParserRuleContext) ctx.VAR(i), "Expected type 'Getal' but was '%s'",type);
                     return;
+                }
+                if (resType instanceof NederScriptType.Reeks) {
+                    NederScriptType elemType = ((NederScriptType.Reeks) resType).getElemType();
+                    resType = elemType;
+                } else if (resType instanceof NederScriptType.Touw) {
+                    resType = NederScriptType.KARAKTER;
+                } else {
+                    addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
                 }
             }
 
@@ -285,17 +292,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 } else {
                     addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
                 }
-            }
-
-            for (int i = 1; i < ctx.VAR().size(); i++) {
-                if (resType instanceof NederScriptType.Reeks) {
-                    NederScriptType elemType = ((NederScriptType.Reeks) resType).getElemType();
-                    resType = elemType;
-                } else if (resType instanceof NederScriptType.Touw) {
-                    resType = NederScriptType.KARAKTER;
-                } else {
-                    addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
-                }
+                System.out.println("Increased offset");
             }
 
             setType(ctx, resType);
@@ -306,10 +303,11 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 addError(ctx, "Variable '%s' not initialized", ctx.VAR(0).getText());
             }
             setType(ctx, type);
+            int off = this.st.getOffset(ctx.VAR(0).getText());
+            setOffset(ctx, off);
         }
 
-        int off = this.st.getOffset(ctx.VAR(0).getText());
-        setOffset(ctx, off);
+
 
     }
 
@@ -319,12 +317,18 @@ public class NederScriptChecker extends NederScriptBaseListener {
             //this var is an array with index
 
             NederScriptType resType = this.st.getType(ctx.VAR(0).getText());
-
             for (int i = 1; i < ctx.VAR().size(); i++) {
                 NederScriptType type = this.st.getType(ctx.VAR(i).getText());
                 if (!type.equals(NederScriptType.GETAL)) {
                     addError(ctx, "Expected type 'Getal' but was '%s'",type);
                     return;
+                }
+                if (resType instanceof NederScriptType.Reeks) {
+                    resType = ((NederScriptType.Reeks) resType).getElemType();
+                } else if (resType instanceof NederScriptType.Touw) {
+                    resType = NederScriptType.KARAKTER;
+                } else {
+                    addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
                 }
             }
 
@@ -339,15 +343,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 }
             }
 
-            for (int i = 1; i < ctx.VAR().size(); i++) {
-                if (resType instanceof NederScriptType.Reeks) {
-                    resType = ((NederScriptType.Reeks) resType).getElemType();
-                } else if (resType instanceof NederScriptType.Touw) {
-                    resType = NederScriptType.KARAKTER;
-                } else {
-                    addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
-                }
-            }
 
             checkType(ctx.expr(),resType);
 
@@ -359,10 +354,11 @@ public class NederScriptChecker extends NederScriptBaseListener {
             } else {
                 addError(ctx, "Variable '%s' not declared", varName);
             }
+            int off = this.st.getOffset(ctx.VAR(0).getText());
+            setOffset(ctx, off);
         }
 
-        int off = this.st.getOffset(ctx.VAR(0).getText());
-        setOffset(ctx, off);
+
 
     }
 
@@ -414,6 +410,13 @@ public class NederScriptChecker extends NederScriptBaseListener {
             }
         }
         setType(ctx, new NederScriptType.Reeks(type, elemNumber));
+
+        for (int i = 0; i < ctx.VAR().size(); i++) {
+            int off = this.st.getOffset(ctx.VAR(i).getText());
+            setOffset(ctx.VAR(i), off);
+        }
+
+
     }
 
     @Override

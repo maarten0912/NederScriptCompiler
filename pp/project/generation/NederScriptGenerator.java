@@ -1,5 +1,6 @@
 package pp.project.generation;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import pp.project.elaboration.*;
 import pp.project.exception.ParseException;
@@ -28,6 +29,9 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         this.prog.setDebugMode(false);
         return this.prog;
     }
+
+
+
 
     @Override
     public List<NederScriptInstruction> visitProgram(NederScriptParser.ProgramContext ctx) {
@@ -256,7 +260,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitTypedDecl(NederScriptParser.TypedDeclContext ctx) {
-        //TODO test
         System.out.println(String.format("Variable %s has offset %s", ctx.VAR().getText(), this.result.getOffset(ctx)));
         List<NederScriptInstruction> instList = new ArrayList<>();
         instList.addAll(visit(ctx.expr()));
@@ -264,31 +267,53 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         if (type instanceof NederScriptType.Touw) {
             // regA: stringlength
             instList.add(new NederScriptInstruction.Pop(2));
-            // regB: just the value 1
-            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
-            // regC: offset
-            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 4));
-            // regD: string length + 1
-            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 5));
+            // regB: offset
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 3));
+            // regC: string length + 1
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 2, 0, 4));
             // string length + 1 -> mem(offset)
-            instList.add(new NederScriptInstruction.Store(5, new NederScriptAddrImmDI.NederScriptIndAddr(4)));
+            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
             // offset++
-            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 4, 3, 4));
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 3, 0, 3));
 
             instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(5)));
             // get next character
-            instList.add(new NederScriptInstruction.Pop(5));
-            instList.add(new NederScriptInstruction.Store(5, new NederScriptAddrImmDI.NederScriptIndAddr(4)));
+            instList.add(new NederScriptInstruction.Pop(4));
+            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
 
             // offset := offset + 1
-            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 4, 3, 4));
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 3, 0, 3));
             // stringlength := stringlength - 1
-            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 2, 3, 2));
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr, 2, 0, 2));
 
             // if stringlength != 0, jump back
             instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-4)));
         } else if (type instanceof NederScriptType.Reeks) {
-            //TODO
+            //TODO nested arrays
+
+            // regA: arraylength
+            instList.add(new NederScriptInstruction.Pop(2));
+            // regB: offset
+            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 3));
+            // regC: arraylength + 1
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 2, 0, 4));
+            // arraylength + 1 -> mem(offset)
+            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+            // offset++
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 3, 0, 3));
+
+            instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(5)));
+            // get next element
+            instList.add(new NederScriptInstruction.Pop(4));
+            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+
+            // offset := offset + 1
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 3, 0, 3));
+            // stringlength := stringlength - 1
+            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr, 2, 0, 2));
+
+            // if arraylength != 0, jump back
+            instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-4)));
         } else {
             instList.add(new NederScriptInstruction.Pop(2));
             instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
@@ -314,7 +339,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
         instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(bodyI.size() + 2)));
 
-        addThreadBranch(1,8);
+        addThreadBranch(1,4);
 
         instList.addAll(bodyI);
 
@@ -341,26 +366,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     if (exprIns != null) {
                         instList.addAll(exprIns);
                     }
-                    //regA has pointer to the string
-//                    instList.add(new NederScriptInstruction.Pop(2));
-                    //regB has length+1 of the string
-//                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2),3));
-                    //Put value 1 in regC
-//                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),4));
-                    //Decrease regB to make it the length
-//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 3, 4, 3));
-                    //Check if regB is 0, put this in regD
-//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 3, 0, 5));
-                    //Branch if regB is 0
-//                    instList.add(new NederScriptInstruction.Branch(5, new NederScriptTarget.Rel(6)));
-                    //Increment regA
-//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 4,2));
-                    //Print memory location of regA
-//                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2),6));
-//                    instList.add(new NederScriptInstruction.WriteInstr(6, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
-                    //Decrement regB
-//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 3, 4, 3));
-//                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-6)));
+                    instList.addAll(createPrintString("Sprockell "));
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(48),7));
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 7, 1, 7));
+                    instList.add(new NederScriptInstruction.WriteInstr(7, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
+                    instList.addAll(createPrintString(" says "));
 
                     instList.add(new NederScriptInstruction.Pop(2));
                     instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
@@ -375,6 +385,59 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
                     // if sLen != 0, jump
                     instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-3)));
+
+                    instList.addAll(createPrintString("\n"));
+
+                } else if (type instanceof NederScriptType.Reeks) {
+                    List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
+                    if (exprIns != null) {
+                        instList.addAll(exprIns);
+                    }
+                    instList.addAll(createPrintString("Sprockell "));
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(48),7));
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 7, 1, 7));
+                    instList.add(new NederScriptInstruction.WriteInstr(7, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
+                    instList.addAll(createPrintString(" says "));
+
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(48),7));
+                    //Print [
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(91),6));
+                    instList.add(new NederScriptInstruction.WriteInstr(6, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
+
+                    instList.add(new NederScriptInstruction.Pop(2));
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
+
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(6)));
+
+                    instList.add(new NederScriptInstruction.Pop(4));
+
+                    //Convert number to ascii character
+                    //TODO: this is way too hard for multiple digit, numbers
+//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add,4, 7,4));
+                    instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
+                    //Print comma
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(44),6));
+                    instList.add(new NederScriptInstruction.WriteInstr(6, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
+
+
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 2, 3, 2));
+
+                    //If we are at the last element in the array, jump
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 2, 3, 5));
+                    instList.add(new NederScriptInstruction.Branch(5, new NederScriptTarget.Rel(3)));
+                    // if arrLen != 0, jump
+                    instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-7)));
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(3)));
+
+                    //Print only the element without comma
+                    instList.add(new NederScriptInstruction.Pop(4));
+                    //Convert number to ascii character
+//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add,4, 7,4));
+                    instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
+
+                    //Print ]
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(93),6));
+                    instList.add(new NederScriptInstruction.WriteInstr(6, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
 
                     instList.addAll(createPrintString("\n"));
 
@@ -393,6 +456,12 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     if (exprIns != null) {
                         instList.addAll(exprIns);
                     }
+                    instList.addAll(createPrintString("Sprockell "));
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(48),7));
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 7, 1, 7));
+                    instList.add(new NederScriptInstruction.WriteInstr(7, new NederScriptAddrImmDI.NederScriptDirAddr(65537)));
+                    instList.addAll(createPrintString(" says "));
+
                     instList.add(new NederScriptInstruction.Pop(2));
                     instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(2 + 7*2)));
                     instList.addAll(createPrintString("onwaar\n"));
@@ -404,6 +473,9 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 break;
             case "lengte":
                 //TODO
+//                int size = this.result.getType(ctx.expr(0)).size() - 1;
+//                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(size),2));
+//                instList.add(new NederScriptInstruction.Push(2));
                 break;
             default:
                 //TODO
@@ -445,10 +517,9 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitVarExpr(NederScriptParser.VarExprContext ctx) {
-        //TODO array
         List<NederScriptInstruction> instList = new ArrayList<>();
-
         NederScriptType type = this.result.getType(ctx);
+        System.out.println(String.format("Found variable %s of type %s with offset %s", ctx.VAR(0).getText(),type,this.result.getOffset(ctx)));
         if (type instanceof NederScriptType.Touw) {
             // offset -> regA
             instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)),2));
@@ -472,6 +543,41 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr,5,0,5));
             instList.add(new NederScriptInstruction.Push(5));
 
+        } else if (type instanceof NederScriptType.Reeks) {
+            if (ctx.VAR().size() > 1 || ctx.NUM().size() > 0) {
+                //TODO nested arrays
+                for (int i = 0; i < ctx.getChildCount(); i++) {
+                    if (ctx.VAR().contains(ctx.getChild(i))) {
+
+                        break;
+                    } else if (ctx.NUM().contains(ctx.getChild(i))) {
+
+                        break;
+                    }
+                }
+            } else {
+                // offset -> regA
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)),2));
+                // strLen + 1 -> regB
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2),3));
+                // offset + strLen -> regB
+                instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add,2,3,3));
+                instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr,3,0,3));
+
+                instList.add(new NederScriptInstruction.Compute(NederScriptOperator.GtE, 2, 3, 4));
+                instList.add(new NederScriptInstruction.Branch(4, new NederScriptTarget.Rel(5)));
+
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(3),5));
+                instList.add(new NederScriptInstruction.Push(5));
+                instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr,3,0,3));
+
+                instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-5)));
+
+//            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr,3,0,3));
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(3),5));
+                instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr,5,0,5));
+                instList.add(new NederScriptInstruction.Push(5));
+            }
         } else {
             instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
             instList.add(new NederScriptInstruction.Push(2));
@@ -612,34 +718,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         String s = ctx.getText().split("\"",3)[1];
         Integer sLen = s.length();
         List<NederScriptInstruction> instList = new ArrayList<>();
-        //Length of size in regA
-//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(-1), 2));
-        //regB with 1
-//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),3));
-//        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
-        //Load mem(0) in regC
-//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 4));
-//        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 4, 2));
-
-        //If regC is not 0, jump
-//        instList.add(new NederScriptInstruction.Branch(4, new NederScriptTarget.Rel(-3)));
-
-        //If we reach this, we have found an empty spot on the heap, beginning at mem(regA)
-        //Store size in regD
-//        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(sLen + 1), 5));
-//        instList.add(new NederScriptInstruction.Store(5, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
-
-        //Put pointer on the stack
-//        instList.add(new NederScriptInstruction.Push(2));
-
-//        for (int i = 0; i < sLen; i++) {
-//            Integer c = (int) s.charAt(i);
-//            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(c), 4));
-//            instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3,2));
-//            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
-//        }
-
-        // -- new version --
 
         for (int i = sLen - 1; i >= 0; i--) {
             Integer c = (int) s.charAt(i);
@@ -662,8 +740,30 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitArrayPrimitive(NederScriptParser.ArrayPrimitiveContext ctx) {
-        //TODO put array on heap
-        return null;
+        //TODO nested array
+        int arrLen = ctx.VAR().size() + ctx.primitive().size();
+
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+        for (int i = ctx.getChildCount() - 1; i >= 0 ; i--) {
+            if (ctx.VAR().contains(ctx.getChild(i))) {
+                //TODO array indexing
+                assert this.result.getType(ctx.getChild(i)).equals(NederScriptType.GETAL)
+                        || this.result.getType(ctx.getChild(i)).equals(NederScriptType.BOOLEAANS)
+                        || this.result.getType(ctx.getChild(i)).equals(NederScriptType.KARAKTER);
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx.getChild(i))),2));
+                instList.add(new NederScriptInstruction.Push(2));
+            } else if (ctx.primitive().contains(ctx.getChild(i))) {
+                assert this.result.getType(ctx.getChild(i)).equals(NederScriptType.GETAL)
+                        || this.result.getType(ctx.getChild(i)).equals(NederScriptType.BOOLEAANS)
+                        || this.result.getType(ctx.getChild(i)).equals(NederScriptType.KARAKTER);
+
+                instList.addAll(visit(ctx.getChild(i)));
+            }
+        }
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(arrLen), 2));
+        instList.add(new NederScriptInstruction.Push(2));
+        return instList;
     }
 
     @Override
