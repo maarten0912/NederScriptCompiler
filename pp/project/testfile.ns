@@ -7,6 +7,8 @@ functie hoofd() {
         afdrukken(2);
     }
     afdrukken(0);
+    aansluiten();
+    afdrukken(4);
 }
 
 

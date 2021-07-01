@@ -45,30 +45,34 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
                 if (newList != null) {
 
-                    //Setup branch for subthreads
-                    instList.add(new NederScriptInstruction.Branch(1, new NederScriptTarget.Rel(4)));
+                    if (result.getNumThreads() > 1) {
+                        //Setup branch for subthreads
+                        instList.add(new NederScriptInstruction.Branch(1, new NederScriptTarget.Rel(4)));
+                    }
 
                     //TODO: not best solution, fix another way
                     //Put something in first mem address because the length in-built function is supposed to be there
                     instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),2));
                     instList.add(new NederScriptInstruction.Store(2, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
 
-                    //Jump for main thread
-                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(getThreadInst().size() + 8)));
+                    if (result.getNumThreads() > 1) {
+                        //Jump for main thread
+                        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(getThreadInst().size() + 8)));
 
-                    //Loop threads until called
-                    instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptIndAddr(1)));
-                    instList.add(new NederScriptInstruction.Receive(2));
-                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 2, 0, 3));
-                    instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-3)));
+                        //Loop threads until called
+                        instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptIndAddr(1)));
+                        instList.add(new NederScriptInstruction.Receive(2));
+                        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 2, 0, 3));
+                        instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-3)));
 
-                    //Jump to called location in register A
-                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(10),3));
-                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 3));
-                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Ind(3)));
+                        //Jump to called location in register A
+                        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(10), 3));
+                        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 3));
+                        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Ind(3)));
 
-                    //Thread jump blocks
-                    instList.addAll(getThreadInst());
+                        //Thread jump blocks
+                        instList.addAll(getThreadInst());
+                    }
 
                     instList.addAll(newList);
                 }
@@ -354,6 +358,14 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         Integer threadID = getThreads().keySet().size();
         Integer offset = getThreadOffset(threadID) + 1;
 
+        //Increment active thread counter
+        instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptDirAddr(5)));
+        instList.add(new NederScriptInstruction.Receive(3));
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),4));
+        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 3, 4,3));
+        instList.add(new NederScriptInstruction.WriteInstr(3, new NederScriptAddrImmDI.NederScriptDirAddr(5)));
+
+        //Activate the thread
         instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(offset),2));
         instList.add(new NederScriptInstruction.WriteInstr(2,new NederScriptAddrImmDI.NederScriptDirAddr(threadID)));
 
@@ -371,6 +383,13 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         }
 
         instList.addAll(bodyI);
+
+        //Decrement active thread counter
+        instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptDirAddr(5)));
+        instList.add(new NederScriptInstruction.Receive(3));
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),4));
+        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 3, 4,3));
+        instList.add(new NederScriptInstruction.WriteInstr(3, new NederScriptAddrImmDI.NederScriptDirAddr(5)));
 
         instList.add(new NederScriptInstruction.EndProg());
 
@@ -505,6 +524,14 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 //                int size = this.result.getType(ctx.expr(0)).size() - 1;
 //                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(size),2));
 //                instList.add(new NederScriptInstruction.Push(2));
+                break;
+            case "aansluiten":
+                instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptDirAddr(5)));
+                instList.add(new NederScriptInstruction.Receive(2));
+                instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 2, 0, 3));
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),4));
+                instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 4, 3, 3));
+                instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-5)));
                 break;
             default:
                 //TODO

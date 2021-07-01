@@ -434,6 +434,10 @@ public class NederScriptChecker extends NederScriptBaseListener {
         st.openScope();
         globalSt.openScope();
         this.result.addThread();
+
+        if (this.result.getNumThreads() > 4) {
+            addError(ctx,"A maximum of 4 threads can be created.");
+        }
     }
 
     @Override
