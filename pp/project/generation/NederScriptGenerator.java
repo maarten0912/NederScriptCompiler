@@ -323,6 +323,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitThreadInst(NederScriptParser.ThreadInstContext ctx) {
+        //TODO
         return visit(ctx.thread());
     }
 

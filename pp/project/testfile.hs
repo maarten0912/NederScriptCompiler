@@ -6,7 +6,7 @@ NederScript is a custom language created by Maarten Meijer and Pepijn Visser
 
 prog :: [Instruction] 
 prog = [ 
-    Branch (regSprID) (Rel (8))
+    Branch (regSprID) (Rel (4))
     , Load (ImmValue (1)) (2)
     , Store (2) (DirAddr (0))
     , Jump (Rel (6))
