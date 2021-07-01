@@ -4,7 +4,7 @@ functie hoofd() {
         afdrukken(1);
     }
     draad {
-        afdrukken(3);
+        afdrukken(2);
     }
     afdrukken(0);
 }

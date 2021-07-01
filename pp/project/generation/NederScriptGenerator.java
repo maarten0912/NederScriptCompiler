@@ -54,13 +54,12 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.add(new NederScriptInstruction.Store(2, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
 
                     //Jump for main thread
-                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(getThreadInst().size() + 6)));
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(getThreadInst().size() + 8)));
 
                     //Loop threads until called
                     instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptIndAddr(1)));
                     instList.add(new NederScriptInstruction.Receive(2));
                     instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 2, 0, 3));
-//                    instList.add(new NederScriptInstruction.WriteInstr(2, ));
                     instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-3)));
 
                     //Jump to called location in register A
