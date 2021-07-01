@@ -162,11 +162,12 @@ public class NederScriptChecker extends NederScriptBaseListener {
         String var = ctx.VAR().getText();
         NederScriptType type;
         if (ctx.type().STRING() != null) {
-            //TODO declare with length
-            type = new NederScriptType.Touw(0);
+            int len = Integer.parseInt(ctx.type().NUM().getText());
+            type = new NederScriptType.Touw(len);
         } else if (ctx.type().ARRAY() != null) {
-            //TODO declare with length
-            type = new NederScriptType.Reeks(NederScriptType.GETAL, 0);
+            NederScriptType elemType = typeContextToNederScriptType(ctx.type().type());
+            int len = Integer.parseInt(ctx.type().NUM().getText());
+            type = new NederScriptType.Reeks(elemType, len);
         } else {
             type = typeContextToNederScriptType(ctx.type());
         }
@@ -188,10 +189,26 @@ public class NederScriptChecker extends NederScriptBaseListener {
         NederScriptType type;
         if (ctx.type().STRING() != null) {
             int strLen = getType(ctx.expr()).size() - 1;
+            int expectedLen = Integer.parseInt(ctx.type().NUM().getText());
+            if (strLen != expectedLen) {
+                addError(ctx, "Lengths of %s do not match: expected %s but found %s", var, expectedLen, strLen);
+            }
             type = new NederScriptType.Touw(strLen);
         } else if (ctx.type().ARRAY() != null) {
             int arrLen = getType(ctx.expr()).size() - 1;
+            int expectedLen = Integer.parseInt(ctx.type().NUM().getText());
+            if (arrLen != expectedLen) {
+                addError(ctx, "Lengths of %s do not match: expected %s but found %s", var, expectedLen, arrLen);
+            }
             NederScriptType elemType = ((NederScriptType.Reeks) getType(ctx.expr())).getElemType();
+            if (ctx.type().type().ARRAY() != null || ctx.type().type().STRING() != null) {
+                addError(ctx, "Nested array are currently not supported");
+                return;
+            }
+            NederScriptType expectedElemType = typeContextToNederScriptType(ctx.type().type());
+            if (elemType != expectedElemType) {
+                addError(ctx, "Reeks element types of %s do not match: expected %s but found %s", var, expectedElemType, elemType);
+            }
             type = new NederScriptType.Reeks(elemType, arrLen);
         } else {
             type = typeContextToNederScriptType(ctx.type());
@@ -206,6 +223,9 @@ public class NederScriptChecker extends NederScriptBaseListener {
             setPublic(ctx, false);
         }
         checkType(ctx.expr(), type);
+        setType(ctx, type);
+        System.out.println(String.format("[exitTypedDecl] Found variable %s of type %s with offset %s", ctx.VAR().getText(),this.result.getType(ctx),this.result.getOffset(ctx)));
+
     }
 
     @Override
@@ -267,15 +287,16 @@ public class NederScriptChecker extends NederScriptBaseListener {
             // this var is a list and an index is supplied
 
             NederScriptType resType = this.st.getType(ctx.VAR(0).getText());
+            setType(ctx.VAR(0), resType);
             for (int i = 1; i < ctx.VAR().size(); i++) {
                 NederScriptType type = this.st.getType(ctx.VAR(i).getText());
+                setOffset(ctx.VAR(i),this.st.getOffset(ctx.VAR(i).getText()));
                 if (!type.equals(NederScriptType.GETAL)) {
                     addError((ParserRuleContext) ctx.VAR(i), "Expected type 'Getal' but was '%s'",type);
                     return;
                 }
                 if (resType instanceof NederScriptType.Reeks) {
-                    NederScriptType elemType = ((NederScriptType.Reeks) resType).getElemType();
-                    resType = elemType;
+                    resType = ((NederScriptType.Reeks) resType).getElemType();
                 } else if (resType instanceof NederScriptType.Touw) {
                     resType = NederScriptType.KARAKTER;
                 } else {
@@ -285,17 +306,17 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
             for (int i = 0; i < ctx.NUM().size(); i++) {
                 if (resType instanceof NederScriptType.Reeks) {
-                    NederScriptType elemType = ((NederScriptType.Reeks) resType).getElemType();
-                    resType = elemType;
+                    resType = ((NederScriptType.Reeks) resType).getElemType();
                 } else if (resType instanceof NederScriptType.Touw) {
                     resType = NederScriptType.KARAKTER;
                 } else {
                     addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
                 }
-                System.out.println("Increased offset");
             }
 
             setType(ctx, resType);
+            setOffset(ctx, this.st.getOffset(ctx.VAR(0).getText()));
+            setOffset(ctx.VAR(0), this.st.getOffset(ctx.VAR(0).getText()));
 
         } else {
             NederScriptType type = this.st.getType(ctx.VAR(0).getText());
@@ -307,12 +328,14 @@ public class NederScriptChecker extends NederScriptBaseListener {
             setOffset(ctx, off);
         }
 
+        System.out.println(String.format("[exitVarExpr] Found variable %s of type %s with offset %s", ctx.VAR(0).getText(),this.result.getType(ctx),this.result.getOffset(ctx)));
 
 
     }
 
     @Override
     public void exitAssign(NederScriptParser.AssignContext ctx) {
+        System.out.println("visit assign");
         if (ctx.VAR().size() > 1 || ctx.NUM().size() > 0) {
             //this var is an array with index
 
@@ -342,7 +365,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
                     addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
                 }
             }
-
 
             checkType(ctx.expr(),resType);
 

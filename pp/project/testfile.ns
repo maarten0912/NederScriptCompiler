@@ -1,12 +1,7 @@
 functie hoofd() {
-
-    draad {
-        afdrukken(1);
-    }
-    draad {
-        afdrukken(2);
-    }
-    afdrukken(0);
+    Reeks<Getal><4> a = [5,6,7,8];
+    Getal b = 2;
+    afdrukken(a[b]);
 }
 
 

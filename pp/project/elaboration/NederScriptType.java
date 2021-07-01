@@ -83,7 +83,7 @@ abstract public class NederScriptType {
 
         @Override
         public String toString() {
-            return "Reeks<" + getElemType() + ">";
+            return "Reeks<" + getElemType() + "><" + this.length + ">";
         }
 
         @Override
@@ -96,6 +96,9 @@ abstract public class NederScriptType {
             }
             NederScriptType.Reeks other = (NederScriptType.Reeks) obj;
             if (!this.elemType.equals(other.elemType)) {
+                return false;
+            }
+            if (this.size() != other.size()) {
                 return false;
             }
             return true;
@@ -120,7 +123,7 @@ abstract public class NederScriptType {
         }
 
         @Override
-        public String toString() {return "Touw"; }
+        public String toString() {return "Touw<" + this.length + ">"; }
 
         @Override
         public boolean equals(Object obj) {
@@ -128,6 +131,10 @@ abstract public class NederScriptType {
                 return true;
             }
             if (!(obj instanceof NederScriptType.Touw)) {
+                return false;
+            }
+            NederScriptType.Touw other = (NederScriptType.Touw) obj;
+            if (this.size() != other.size()) {
                 return false;
             }
             return true;
