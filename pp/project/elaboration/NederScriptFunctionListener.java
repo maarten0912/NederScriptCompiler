@@ -14,6 +14,7 @@ public class NederScriptFunctionListener extends NederScriptBaseListener {
         this.checker = checker;
         this.st.add("afdrukken", NederScriptType.LEEGTE);
         this.st.add("lengte", NederScriptType.GETAL);
+        this.st.add("aansluiten",NederScriptType.LEEGTE);
         new ParseTreeWalker().walk(this, tree);
     }
 
