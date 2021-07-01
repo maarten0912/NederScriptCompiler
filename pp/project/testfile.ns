@@ -1,9 +1,12 @@
 functie hoofd() {
 
     draad {
-        afdrukken(1);
+        afdrukken(2);
     }
-    afdrukken(2);
+    draad {
+        afdrukken(3);
+    }
+    afdrukken(1);
 }
 
 

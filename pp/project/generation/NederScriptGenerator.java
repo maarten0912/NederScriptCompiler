@@ -6,7 +6,9 @@ import pp.project.elaboration.*;
 import pp.project.exception.ParseException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScriptInstruction>> {
 
@@ -14,7 +16,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     private NederScriptResult result;
     private NederScriptProgram prog;
     private ScopeTable st;
-
+    private Map<Integer, List<NederScriptInstruction>> threads = new HashMap<>();
 
     public NederScriptProgram generate(ParseTree tree, NederScriptResult result) throws ParseException {
         this.result = result;
@@ -37,16 +39,36 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     public List<NederScriptInstruction> visitProgram(NederScriptParser.ProgramContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
 
-        //TODO: not best solution, fix another way
-        //Put something in first mem address because the length in-built function is supposed to be there
-        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),2));
-        instList.add(new NederScriptInstruction.Store(2, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
-
-
         for (NederScriptParser.FunctionContext f : ctx.function()) {
             if (f.VAR(0).getText().equals("hoofd")) {
                 List<NederScriptInstruction> newList = visit(f);
+
                 if (newList != null) {
+
+                    //Setup branch for subthreads
+                    instList.add(new NederScriptInstruction.Branch(1, new NederScriptTarget.Rel(4)));
+
+                    //TODO: not best solution, fix another way
+                    //Put something in first mem address because the length in-built function is supposed to be there
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),2));
+                    instList.add(new NederScriptInstruction.Store(2, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
+
+                    //Jump for main thread
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(getThreadInst().size() + 6)));
+
+                    //Loop threads until called
+                    instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptIndAddr(1)));
+                    instList.add(new NederScriptInstruction.Receive(2));
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 2, 0, 3));
+//                    instList.add(new NederScriptInstruction.WriteInstr(2, ));
+                    instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-3)));
+
+                    //Jump to called location in register A
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Ind(2)));
+
+                    //Thread jump blocks
+                    instList.addAll(getThreadInst());
+
                     instList.addAll(newList);
                 }
             }
@@ -323,24 +345,28 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitThreadInst(NederScriptParser.ThreadInstContext ctx) {
-        //TODO
-        return visit(ctx.thread());
+        List<NederScriptInstruction> instList = new ArrayList<>();
+
+        addThreadInst(visit(ctx.thread()));
+
+        Integer threadID = getThreads().keySet().size();
+        Integer offset = getThreadOffset(threadID) + 1;
+
+        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(offset),2));
+        instList.add(new NederScriptInstruction.WriteInstr(2,new NederScriptAddrImmDI.NederScriptDirAddr(threadID)));
+
+        return instList;
     }
 
     @Override
     public List<NederScriptInstruction> visitThread(NederScriptParser.ThreadContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
 
-
         List<NederScriptInstruction> bodyI = new ArrayList<>();
 
         for (NederScriptParser.InstructionContext ic : ctx.instruction()) {
             bodyI.addAll(visit(ic));
         }
-
-        instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(bodyI.size() + 2)));
-
-        addThreadBranch(1,4);
 
         instList.addAll(bodyI);
 
@@ -789,14 +815,36 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
-    public void addThreadBranch(Integer threadID, Integer jumpAddr) {
-        Integer jump = prog.getInstructions().size() + jumpAddr;
+    public List<NederScriptInstruction> getThreadInst() {
+        List<NederScriptInstruction> instList = new ArrayList<>();
 
-        List<NederScriptInstruction> instList = this.prog.getInstructions();
+        for (Integer id : this.threads.keySet()) {
+            instList.addAll(this.threads.get(id));
+        }
 
-        instList.add(0, new NederScriptInstruction.Branch("regSprID", new NederScriptTarget.Rel(jump)));
+        return instList;
+    }
 
-        this.prog.setInstList(instList);
+    public void addThreadInst(List<NederScriptInstruction> threadInst) {
+        this.threads.put(this.threads.size() + 1,threadInst);
+    }
+
+    public Map<Integer, List<NederScriptInstruction>> getThreads() {
+        return this.threads;
+    }
+
+    public Integer getThreadOffset(Integer threadID) {
+        Integer offset = 0;
+
+        for (Integer id : this.threads.keySet()) {
+            if (id == threadID) {
+                return offset;
+            } else {
+                offset += this.threads.get(id).size();
+            }
+        }
+
+        return offset;
     }
 
 
