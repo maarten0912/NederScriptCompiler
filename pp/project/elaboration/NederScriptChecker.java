@@ -19,15 +19,19 @@ public class NederScriptChecker extends NederScriptBaseListener {
     private List<String> errors;
     private NederScriptResult result;
     private ScopeTable st;
-    private ScopeTable globalSt;
+    private ScopeTable threadSt;
+    private ScopeTable publicS;
+    private Boolean inThread;
 
     public NederScriptResult check(ParseTree tree) throws ParseException {
         this.result = new NederScriptResult();
         this.errors = new ArrayList<>();
         this.st = new ScopeTable();
-        this.globalSt = new ScopeTable();
+        this.threadSt = new ScopeTable();
+        this.inThread = false;
+        this.publicS = new ScopeTable();
 
-        new NederScriptFunctionListener().check(this,tree, st);
+        new NederScriptFunctionListener().check(this,tree, st, threadSt);
         new ParseTreeWalker().walk(this, tree);
         if (hasErrors()) {
             throw new ParseException(getErrors());
@@ -48,7 +52,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void enterFunction(NederScriptParser.FunctionContext ctx) {
         st.openScope();
-        globalSt.openScope();
+        threadSt.openScope();
         if (ctx.COLON() != null) {
             // A return type is supplied
             for (int i = 0; i < ctx.type().size() - 1; i++) {
@@ -67,19 +71,19 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void exitFunction(NederScriptParser.FunctionContext ctx) {
         st.closeScope();
-        globalSt.closeScope();
+        threadSt.closeScope();
     }
 
     @Override
     public void enterNewScopeInst(NederScriptParser.NewScopeInstContext ctx) {
         st.openScope();
-        globalSt.openScope();
+        threadSt.openScope();
     }
 
     @Override
     public void exitNewScopeInst(NederScriptParser.NewScopeInstContext ctx) {
         st.closeScope();
-        globalSt.closeScope();
+        threadSt.closeScope();
     }
 
     @Override
@@ -100,10 +104,17 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void exitFunCall(NederScriptParser.FunCallContext ctx) {
         //TODO check if number and types of args are correct
-        if (!this.st.contains(ctx.VAR().getText())) {
+        ScopeTable curSt;
+        if (inThread) {
+            curSt = this.threadSt;
+        } else {
+            curSt = this.st;
+        }
+
+        if (!curSt.contains(ctx.VAR().getText())) {
             addError(ctx, "Function '" + ctx.VAR().getText() + "' does not exist.");
         } else {
-            setType(ctx,this.st.getType(ctx.VAR().getText()));
+            setType(ctx,curSt.getType(ctx.VAR().getText()));
         }
     }
 
@@ -173,12 +184,26 @@ public class NederScriptChecker extends NederScriptBaseListener {
         }
 
         if (ctx.PUBLIC() != null) {
-            this.globalSt.add(var, type);
-            setOffset(ctx, this.globalSt.getOffset(var));
+            if (this.st.contains(var) || this.threadSt.contains(var)) {
+                addError(ctx, "You cannot redeclare private variable '%s' as public", var);
+            }
+            if (this.publicS.contains(var)) {
+                addError(ctx, "Public variable '%s' already declared.", var);
+            }
+            this.publicS.add(var, type);
+            setOffset(ctx, this.publicS.getOffset(var));
             setPublic(ctx, true);
         } else {
-            this.st.add(var, type);
-            setOffset(ctx, this.st.getOffset(var));
+            if (this.publicS.contains(var)) {
+                addError(ctx, "You cannot redeclare public variable '%s' as private", var);
+            }
+            if (inThread) {
+                this.threadSt.add(var,type);
+                setOffset(ctx, this.threadSt.getOffset(var));
+            } else {
+                this.st.add(var, type);
+                setOffset(ctx, this.st.getOffset(var));
+            }
             setPublic(ctx, false);
         }
     }
@@ -214,12 +239,27 @@ public class NederScriptChecker extends NederScriptBaseListener {
             type = typeContextToNederScriptType(ctx.type());
         }
         if (ctx.PUBLIC() != null) {
-            this.globalSt.add(var, type);
-            setOffset(ctx, this.globalSt.getOffset(var));
+            if (this.st.contains(var)) {
+                addError(ctx, "You cannot redeclare private variable '%s' as public",var);
+            }
+            if (this.publicS.contains(var)) {
+                addError(ctx, "Public variable '%s' already declared.", var);
+            }
+            this.publicS.add(var, type);
+            setOffset(ctx, this.publicS.getOffset(var));
             setPublic(ctx, true);
         } else {
-            this.st.add(var, type);
-            setOffset(ctx, this.st.getOffset(var));
+            if (this.publicS.contains(var)) {
+                addError(ctx, "You cannot redeclare public variable '%s' as private",var);
+            }
+            if (inThread) {
+                this.threadSt.add(var, type);
+                setOffset(ctx, this.threadSt.getOffset(var));
+            } else {
+                this.st.add(var, type);
+                setOffset(ctx, this.st.getOffset(var));
+
+            }
             setPublic(ctx, false);
         }
         checkType(ctx.expr(), type);
@@ -238,55 +278,68 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void enterIfelseInst(NederScriptParser.IfelseInstContext ctx) {
         st.openScope();
-        globalSt.openScope();
+        threadSt.openScope();
     }
 
     @Override
     public void exitIfelseInst(NederScriptParser.IfelseInstContext ctx) {
         st.closeScope();
-        globalSt.closeScope();
+        threadSt.closeScope();
     }
 
     @Override
     public void enterWhileInst(NederScriptParser.WhileInstContext ctx) {
         st.openScope();
-        globalSt.openScope();
+        threadSt.openScope();
     }
 
     @Override
     public void exitWhileInst(NederScriptParser.WhileInstContext ctx) {
         st.closeScope();
-        globalSt.closeScope();
+        threadSt.closeScope();
     }
 
     @Override
     public void enterForInst(NederScriptParser.ForInstContext ctx) {
         st.openScope();
-        globalSt.openScope();
+        threadSt.openScope();
     }
 
     @Override
     public void exitForInst(NederScriptParser.ForInstContext ctx) {
         st.closeScope();
-        globalSt.closeScope();
+        threadSt.closeScope();
     }
 
 
 
     @Override
     public void exitVarExpr(NederScriptParser.VarExprContext ctx) {
-
         String var = ctx.VAR().getText();
-        if (!this.st.contains(var)) {
+        ScopeTable curSt;
+
+        if (this.publicS.contains(var)) {
+            curSt = this.publicS;
+        }
+        else if (this.threadSt.contains(var)) {
+            curSt = this.threadSt;
+        }
+        else if (this.st.contains(var)) {
+            curSt = this.st;
+            if (inThread) {
+                addError(ctx, "Cannot access private variable '%s'", var);
+            }
+        }
+        else {
             addError(ctx, "Variable '%s' not declared", var);
             return;
         }
-
         if (ctx.expr().size() > 0) {
             // this var is a list and an index is supplied
 
-            NederScriptType resType = this.st.getType(ctx.VAR().getText());
+            NederScriptType resType = curSt.getType(ctx.VAR().getText());
             setType(ctx.VAR(), resType);
+            setPublic(ctx.VAR(), this.publicS.contains(var));
             for (int i = 0; i < ctx.expr().size(); i++) {
                 NederScriptType type = getType(ctx.expr(i));
                 setOffset(ctx.expr(i),getOffset(ctx.expr(i)));
@@ -304,31 +357,49 @@ public class NederScriptChecker extends NederScriptBaseListener {
             }
 
             setType(ctx, resType);
-            setOffset(ctx, this.st.getOffset(ctx.VAR().getText()));
-            setOffset(ctx.VAR(), this.st.getOffset(ctx.VAR().getText()));
+            setOffset(ctx, curSt.getOffset(ctx.VAR().getText()));
+            setOffset(ctx.VAR(), curSt.getOffset(ctx.VAR().getText()));
 
         } else {
-            NederScriptType type = this.st.getType(ctx.VAR().getText());
+            NederScriptType type = curSt.getType(ctx.VAR().getText());
             if (type == null) {
                 addError(ctx, "Variable '%s' not initialized", ctx.VAR().getText());
             }
             setType(ctx, type);
-            int off = this.st.getOffset(ctx.VAR().getText());
+            int off = curSt.getOffset(ctx.VAR().getText());
             setOffset(ctx, off);
         }
+        setPublic(ctx,this.publicS.contains(var));
 
         System.out.println(String.format("[exitVarExpr] Found variable %s of type %s with offset %s", ctx.VAR().getText(),this.result.getType(ctx),this.result.getOffset(ctx)));
-
-
     }
 
     @Override
     public void exitAssign(NederScriptParser.AssignContext ctx) {
         System.out.println("visit assign");
+        String var = ctx.VAR().getText();
+
+        ScopeTable curSt;
+
+        if (this.publicS.contains(var)) {
+            curSt = this.publicS;
+        }
+        else if (this.threadSt.contains(var)) {
+            curSt = this.threadSt;
+        } else if (this.st.contains(var)) {
+            curSt = this.st;
+            if (inThread) {
+                addError(ctx,"Cannot access private variable '%s'",var);
+            }
+        } else {
+            addError(ctx, "Variable '%s' not declared", var);
+            return;
+        }
+
         if (ctx.expr().size() > 1) {
             //this var is an array with index
 
-            NederScriptType resType = this.st.getType(ctx.VAR().getText());
+            NederScriptType resType = curSt.getType(var);
             for (int i = 0; i < ctx.expr().size() - 1; i++) {
                 NederScriptType type = getType(ctx.expr(i));
                 if (!type.equals(NederScriptType.GETAL)) {
@@ -347,18 +418,16 @@ public class NederScriptChecker extends NederScriptBaseListener {
             checkType(ctx.expr(ctx.expr().size() - 1),resType);
 
         } else {
-            String varName = ctx.VAR().getText();
-            if (this.st.contains(varName)) {
-                NederScriptType varType = this.st.getType(ctx.VAR().getText());
+            if (curSt.contains(var)) {
+                NederScriptType varType = curSt.getType(var);
                 checkType(ctx.expr(ctx.expr().size() - 1),varType);
-            } else {
-                addError(ctx, "Variable '%s' not declared", varName);
             }
-            int off = this.st.getOffset(ctx.VAR().getText());
+            int off = curSt.getOffset(var);
             setOffset(ctx, off);
         }
 
 
+        setPublic(ctx,this.publicS.contains(var));
 
     }
 
@@ -375,14 +444,21 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitArrayPrimitive(NederScriptParser.ArrayPrimitiveContext ctx) {
+        ScopeTable curSt;
+        if (inThread) {
+            curSt = this.threadSt;
+        } else {
+            curSt = this.st;
+        }
+
         int elemNumber = 0;
         NederScriptType type = null;
         if (ctx.primitive().size() > 0) {
             type = getType(ctx.primitive(0));
         } else if (ctx.VAR().size() > 0) {
             String var = ctx.VAR(0).getText();
-            if (this.st.contains(var)) {
-                type = this.st.getType(var);
+            if (curSt.contains(var)) {
+                type = curSt.getType(var);
             } else {
                 addError(ctx, "Variable '%s' not declared", var);
             }
@@ -399,8 +475,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
         for (int i = 0; i < ctx.VAR().size(); i++) {
             elemNumber++;
             String var = ctx.VAR(i).getText();
-            if (this.st.contains(var)) {
-                NederScriptType curType = this.st.getType(var);
+            if (curSt.contains(var)) {
+                NederScriptType curType = curSt.getType(var);
                 assert type != null;
                 if (!type.equals(curType)) {
                     addError(ctx,"Not all elements in Reeks have the same type. Expected type '%s' while type was '%s'", type, curType);
@@ -412,7 +488,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
         setType(ctx, new NederScriptType.Reeks(type, elemNumber));
 
         for (int i = 0; i < ctx.VAR().size(); i++) {
-            int off = this.st.getOffset(ctx.VAR(i).getText());
+            int off = curSt.getOffset(ctx.VAR(i).getText());
             setOffset(ctx.VAR(i), off);
         }
 
@@ -432,10 +508,11 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void enterThreadInst(NederScriptParser.ThreadInstContext ctx) {
         st.openScope();
-        globalSt.openScope();
+        threadSt.openScope();
         this.result.addThread();
+        this.inThread = true;
 
-        if (this.result.getNumThreads() > 4) {
+        if (this.result.getNumThreads() > 5) {
             addError(ctx,"A maximum of 4 threads can be created.");
         }
     }
@@ -443,7 +520,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void exitThreadInst(NederScriptParser.ThreadInstContext ctx) {
         st.closeScope();
-        globalSt.closeScope();
+        threadSt.closeScope();
+        this.inThread = false;
     }
 
 

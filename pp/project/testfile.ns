@@ -1,8 +1,21 @@
 functie hoofd() {
-    Reeks<Getal><4> a = [5,6,7,8];
-    voor (Getal i = 0; i < 4; i = i + 1) {
-        afdrukken(a[i+1]);
+
+    Getal b = 5;
+
+    afdrukken(b);
+    draad {
+        vergrendel();
+        Getal b = 2;
+        afdrukken(b);
+        ontgrendel();
     }
+    draad {
+        vergrendel();
+        Getal b = 3;
+        ontgrendel();
+    }
+    aansluiten();
+    afdrukken(b);
 }
 
 

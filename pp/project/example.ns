@@ -22,9 +22,10 @@ functie print_lijst (Reeks<Getal> a) {
 functie hoofd() {
     publiek Reeks<Getal> lijst = [1,2,3];
 
-    Draad d1 = draad(print_lijst(lijst));
     draad name {
-
+        vergrendel();
+        lijst = [3,2,1];
+        ontgrendel();
     }
 
     aansluiten();

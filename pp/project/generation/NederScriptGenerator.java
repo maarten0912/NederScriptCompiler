@@ -323,8 +323,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             }
         } else {
             instList.add(new NederScriptInstruction.Pop(2));
-            System.out.println(type);
-            instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            if (result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+            } else {
+                instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            }
         }
         return instList;
     }
@@ -393,7 +396,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-4)));
         } else {
             instList.add(new NederScriptInstruction.Pop(2));
-            instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            if (this.result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+            } else {
+                instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            }
         }
         return instList;
     }
@@ -594,6 +601,15 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 4, 3, 3));
                 instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-5)));
                 break;
+            case "vergrendel":
+                instList.add(new NederScriptInstruction.TestAndSet(new NederScriptAddrImmDI.NederScriptDirAddr(0)));
+                instList.add(new NederScriptInstruction.Receive(2));
+                instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(2)));
+                instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-3)));
+                break;
+            case "ontgrendel":
+                instList.add(new NederScriptInstruction.WriteInstr(0, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
+                break;
             default:
                 //TODO
                 break;
@@ -707,7 +723,12 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Push(5));
             }
         } else {
-            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
+            if (result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.ReadInstr( new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+                instList.add(new NederScriptInstruction.Receive(2));
+            } else {
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
+            }
             instList.add(new NederScriptInstruction.Push(2));
         }
         return instList;
