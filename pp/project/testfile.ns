@@ -1,21 +1,6 @@
 functie hoofd() {
 
-    Getal b = 5;
 
-    afdrukken(b);
-    draad {
-        vergrendel();
-        Getal b = 2;
-        afdrukken(b);
-        ontgrendel();
-    }
-    draad {
-        vergrendel();
-        Getal b = 3;
-        ontgrendel();
-    }
-    aansluiten();
-    afdrukken(b);
 }
 
 
