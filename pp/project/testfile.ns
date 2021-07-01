@@ -1,7 +1,8 @@
 functie hoofd() {
     Reeks<Getal><4> a = [5,6,7,8];
-    Getal b = 2;
-    afdrukken(a[b]);
+    voor (Getal i = 0; i < 4; i = i + 1) {
+        afdrukken(a[i+1]);
+    }
 }
 
 

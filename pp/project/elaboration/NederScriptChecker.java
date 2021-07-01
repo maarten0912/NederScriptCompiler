@@ -153,7 +153,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
             }
             setType(ctx, getType(ctx.expr(1)));
         } else {
-            addError(ctx, "Found incompatible types for this operation");
+            addError(ctx, "Found incompatible types for %s operation: %s and %s",ctx.plusOp().getText(), getType(ctx.expr(0)), getType(ctx.expr(1)));
         }
     }
 
@@ -275,24 +275,23 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
     @Override
     public void exitVarExpr(NederScriptParser.VarExprContext ctx) {
-        for (int i = 0; i < ctx.VAR().size(); i++) {
-            String var = ctx.VAR(i).getText();
-            if (!this.st.contains(var)) {
-                addError(ctx, "Variable '%s' not declared", var);
-                return;
-            }
+
+        String var = ctx.VAR().getText();
+        if (!this.st.contains(var)) {
+            addError(ctx, "Variable '%s' not declared", var);
+            return;
         }
 
-        if (ctx.VAR().size() > 1 || ctx.NUM().size() > 0) {
+        if (ctx.expr().size() > 0) {
             // this var is a list and an index is supplied
 
-            NederScriptType resType = this.st.getType(ctx.VAR(0).getText());
-            setType(ctx.VAR(0), resType);
-            for (int i = 1; i < ctx.VAR().size(); i++) {
-                NederScriptType type = this.st.getType(ctx.VAR(i).getText());
-                setOffset(ctx.VAR(i),this.st.getOffset(ctx.VAR(i).getText()));
+            NederScriptType resType = this.st.getType(ctx.VAR().getText());
+            setType(ctx.VAR(), resType);
+            for (int i = 0; i < ctx.expr().size(); i++) {
+                NederScriptType type = getType(ctx.expr(i));
+                setOffset(ctx.expr(i),getOffset(ctx.expr(i)));
                 if (!type.equals(NederScriptType.GETAL)) {
-                    addError((ParserRuleContext) ctx.VAR(i), "Expected type 'Getal' but was '%s'",type);
+                    addError(ctx.expr(i), "Expected type 'Getal' but was '%s'",type);
                     return;
                 }
                 if (resType instanceof NederScriptType.Reeks) {
@@ -304,31 +303,21 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 }
             }
 
-            for (int i = 0; i < ctx.NUM().size(); i++) {
-                if (resType instanceof NederScriptType.Reeks) {
-                    resType = ((NederScriptType.Reeks) resType).getElemType();
-                } else if (resType instanceof NederScriptType.Touw) {
-                    resType = NederScriptType.KARAKTER;
-                } else {
-                    addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
-                }
-            }
-
             setType(ctx, resType);
-            setOffset(ctx, this.st.getOffset(ctx.VAR(0).getText()));
-            setOffset(ctx.VAR(0), this.st.getOffset(ctx.VAR(0).getText()));
+            setOffset(ctx, this.st.getOffset(ctx.VAR().getText()));
+            setOffset(ctx.VAR(), this.st.getOffset(ctx.VAR().getText()));
 
         } else {
-            NederScriptType type = this.st.getType(ctx.VAR(0).getText());
+            NederScriptType type = this.st.getType(ctx.VAR().getText());
             if (type == null) {
-                addError(ctx, "Variable '%s' not initialized", ctx.VAR(0).getText());
+                addError(ctx, "Variable '%s' not initialized", ctx.VAR().getText());
             }
             setType(ctx, type);
-            int off = this.st.getOffset(ctx.VAR(0).getText());
+            int off = this.st.getOffset(ctx.VAR().getText());
             setOffset(ctx, off);
         }
 
-        System.out.println(String.format("[exitVarExpr] Found variable %s of type %s with offset %s", ctx.VAR(0).getText(),this.result.getType(ctx),this.result.getOffset(ctx)));
+        System.out.println(String.format("[exitVarExpr] Found variable %s of type %s with offset %s", ctx.VAR().getText(),this.result.getType(ctx),this.result.getOffset(ctx)));
 
 
     }
@@ -336,12 +325,12 @@ public class NederScriptChecker extends NederScriptBaseListener {
     @Override
     public void exitAssign(NederScriptParser.AssignContext ctx) {
         System.out.println("visit assign");
-        if (ctx.VAR().size() > 1 || ctx.NUM().size() > 0) {
+        if (ctx.expr().size() > 1) {
             //this var is an array with index
 
-            NederScriptType resType = this.st.getType(ctx.VAR(0).getText());
-            for (int i = 1; i < ctx.VAR().size(); i++) {
-                NederScriptType type = this.st.getType(ctx.VAR(i).getText());
+            NederScriptType resType = this.st.getType(ctx.VAR().getText());
+            for (int i = 0; i < ctx.expr().size() - 1; i++) {
+                NederScriptType type = getType(ctx.expr(i));
                 if (!type.equals(NederScriptType.GETAL)) {
                     addError(ctx, "Expected type 'Getal' but was '%s'",type);
                     return;
@@ -355,28 +344,17 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 }
             }
 
-            for (int i = 0; i < ctx.NUM().size(); i++) {
-                if (resType instanceof NederScriptType.Reeks) {
-                    NederScriptType elemType = ((NederScriptType.Reeks) resType).getElemType();
-                    resType = elemType;
-                } else if (resType instanceof NederScriptType.Touw) {
-                    resType = NederScriptType.KARAKTER;
-                } else {
-                    addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
-                }
-            }
-
-            checkType(ctx.expr(),resType);
+            checkType(ctx.expr(ctx.expr().size() - 1),resType);
 
         } else {
-            String varName = ctx.VAR(0).getText();
+            String varName = ctx.VAR().getText();
             if (this.st.contains(varName)) {
-                NederScriptType varType = this.st.getType(ctx.VAR(0).getText());
-                checkType(ctx.expr(),varType);
+                NederScriptType varType = this.st.getType(ctx.VAR().getText());
+                checkType(ctx.expr(ctx.expr().size() - 1),varType);
             } else {
                 addError(ctx, "Variable '%s' not declared", varName);
             }
-            int off = this.st.getOffset(ctx.VAR(0).getText());
+            int off = this.st.getOffset(ctx.VAR().getText());
             setOffset(ctx, off);
         }
 
@@ -519,6 +497,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
             return;
         }
         if (!actual.equals(expected)) {
+            System.out.println(node.getText());
             addError(node, "Expected type '%s' but found '%s'", expected,
                     actual);
         }

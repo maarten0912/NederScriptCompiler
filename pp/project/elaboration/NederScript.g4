@@ -34,7 +34,7 @@ thread: THREAD LBRACE instruction+ RBRACE;
 forS: FOR LPAR (assign | decl) SEMI expr SEMI statement RPAR LBRACE instruction+ RBRACE;
 
 /** Assignment **/
-assign: VAR (LBRACK (NUM|VAR) RBRACK)* ASS expr;
+assign: VAR (LBRACK expr RBRACK)* ASS expr;
 
 /** Declaration **/
 decl: (PUBLIC)? type VAR                            #nonTypedDecl
@@ -67,7 +67,7 @@ type: INTEGER | BOOLEAN | CHARACTER | (ARRAY LT type GT LT NUM GT) | (STRING LT 
     | LPAR expr RPAR                   #parExpr
     | funCall                          #funCallExpr
     | primitive                        #primitiveExpr
-    | VAR (LBRACK (VAR|NUM) RBRACK)*   #varExpr
+    | VAR (LBRACK expr RBRACK)*   #varExpr
     ;
 
 /** Prefix operator. */
