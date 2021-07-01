@@ -220,8 +220,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
         instList.addAll(loopI);
 
-        System.out.println(exprI.size());
-
         instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-loopI.size() - exprI.size() - 4)));
 
         return instList;
@@ -267,13 +265,14 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         List<NederScriptInstruction> instList = new ArrayList<>();
 
         instList.addAll(visit(ctx.expr(ctx.expr().size() - 1)));
-        NederScriptType type = this.result.getType(ctx.expr(ctx.expr().size() - 1));
+        NederScriptType type = this.result.getType(ctx);
         if (type instanceof NederScriptType.Touw) {
-            if (ctx.expr().size() > 0) {
+            if (ctx.expr().size() > 1) {
                 //TODO nested arrays
                 //TODO index out of bounds
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
-                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.expr(0))),3));
+                instList.addAll(visit(ctx.expr(0)));
+                instList.add(new NederScriptInstruction.Pop(3));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 2, 0, 2));
                 instList.add(new NederScriptInstruction.Pop(3));
@@ -297,11 +296,12 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             }
 
         } else if (type instanceof NederScriptType.Reeks) {
-            if (ctx.expr().size() > 0) {
+            if (ctx.expr().size() > 1) {
                 //TODO nested arrays
 
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
-                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.expr(0))),3));
+                instList.addAll(visit(ctx.expr(0)));
+                instList.add(new NederScriptInstruction.Pop(3));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
                 instList.add(new NederScriptInstruction.Pop(3));
                 instList.add(new NederScriptInstruction.Store(3,new NederScriptAddrImmDI.NederScriptIndAddr(2)));
@@ -323,7 +323,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             }
         } else {
             instList.add(new NederScriptInstruction.Pop(2));
-            System.out.println(type);
             instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
         }
         return instList;
@@ -337,7 +336,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitTypedDecl(NederScriptParser.TypedDeclContext ctx) {
-        System.out.println(String.format("Variable %s has offset %s", ctx.VAR().getText(), this.result.getOffset(ctx)));
         List<NederScriptInstruction> instList = new ArrayList<>();
         instList.addAll(visit(ctx.expr()));
         NederScriptType type = this.result.getType(ctx.expr());
@@ -641,7 +639,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 //TODO nested arrays
 
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
-                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.expr(0))),3));
+                instList.addAll(visit(ctx.expr(0)));
+                instList.add(new NederScriptInstruction.Pop(3));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 2, 0, 2));
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 3));
@@ -676,8 +675,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             if (ctx.expr().size() > 0) {
                 //TODO nested arrays
 
+                System.out.println("Got variable with offset: " + this.result.getOffset(ctx.VAR()));
+
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
-                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx.expr(0))),3));
+                instList.addAll(visit(ctx.expr(0)));
+                instList.add(new NederScriptInstruction.Pop(3));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 2, 0, 2));
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 3));
@@ -708,6 +710,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             }
         } else {
             instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
+            System.out.println("Got getal variable with offset: " + this.result.getOffset(ctx));
             instList.add(new NederScriptInstruction.Push(2));
         }
         return instList;

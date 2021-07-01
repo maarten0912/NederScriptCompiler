@@ -224,7 +224,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
         }
         checkType(ctx.expr(), type);
         setType(ctx, type);
-        System.out.println(String.format("[exitTypedDecl] Found variable %s of type %s with offset %s", ctx.VAR().getText(),this.result.getType(ctx),this.result.getOffset(ctx)));
 
     }
 
@@ -287,6 +286,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
             NederScriptType resType = this.st.getType(ctx.VAR().getText());
             setType(ctx.VAR(), resType);
+            setType(ctx, resType);
+
             for (int i = 0; i < ctx.expr().size(); i++) {
                 NederScriptType type = getType(ctx.expr(i));
                 setOffset(ctx.expr(i),getOffset(ctx.expr(i)));
@@ -303,7 +304,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 }
             }
 
-            setType(ctx, resType);
             setOffset(ctx, this.st.getOffset(ctx.VAR().getText()));
             setOffset(ctx.VAR(), this.st.getOffset(ctx.VAR().getText()));
 
@@ -313,22 +313,24 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 addError(ctx, "Variable '%s' not initialized", ctx.VAR().getText());
             }
             setType(ctx, type);
+            setType(ctx.VAR(), type);
             int off = this.st.getOffset(ctx.VAR().getText());
             setOffset(ctx, off);
         }
 
-        System.out.println(String.format("[exitVarExpr] Found variable %s of type %s with offset %s", ctx.VAR().getText(),this.result.getType(ctx),this.result.getOffset(ctx)));
+        System.out.println(String.format("[exitVarExpr] Found variable %s of type %s with offset %s", ctx.VAR().getText(),this.result.getType(ctx.VAR()),this.result.getOffset(ctx)));
 
 
     }
 
     @Override
     public void exitAssign(NederScriptParser.AssignContext ctx) {
-        System.out.println("visit assign");
         if (ctx.expr().size() > 1) {
             //this var is an array with index
 
             NederScriptType resType = this.st.getType(ctx.VAR().getText());
+            setType(ctx, resType);
+            setType(ctx.VAR(), resType);
             for (int i = 0; i < ctx.expr().size() - 1; i++) {
                 NederScriptType type = getType(ctx.expr(i));
                 if (!type.equals(NederScriptType.GETAL)) {
@@ -345,7 +347,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
             }
 
             checkType(ctx.expr(ctx.expr().size() - 1),resType);
-
+            setOffset(ctx.VAR(), this.st.getOffset(ctx.VAR().getText()));
         } else {
             String varName = ctx.VAR().getText();
             if (this.st.contains(varName)) {
@@ -354,10 +356,11 @@ public class NederScriptChecker extends NederScriptBaseListener {
             } else {
                 addError(ctx, "Variable '%s' not declared", varName);
             }
-            int off = this.st.getOffset(ctx.VAR().getText());
-            setOffset(ctx, off);
+            setOffset(ctx, this.st.getOffset(ctx.VAR().getText()));
+            setType(ctx, getType(ctx.expr(ctx.expr().size() - 1)));
         }
 
+        System.out.println(String.format("[exitAssign] Found variable %s of type %s", ctx.VAR().getText(),this.result.getType(ctx)));
 
 
     }
