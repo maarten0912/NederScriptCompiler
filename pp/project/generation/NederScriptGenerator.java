@@ -64,7 +64,9 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-3)));
 
                     //Jump to called location in register A
-                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Ind(2)));
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(10),3));
+                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 3));
+                    instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Ind(3)));
 
                     //Thread jump blocks
                     instList.addAll(getThreadInst());
@@ -264,6 +266,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         instList.addAll(visit(ctx.expr()));
         NederScriptType type = this.result.getType(ctx.expr());
         if (type instanceof NederScriptType.Touw) {
+            //TODO
 
         } else if (type instanceof NederScriptType.Reeks) {
             //TODO
@@ -575,10 +578,19 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 //TODO nested arrays
                 for (int i = 0; i < ctx.getChildCount(); i++) {
                     if (ctx.VAR().contains(ctx.getChild(i))) {
-
+                        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR(0))),2));
+                        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR(1))),3));
+                        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
+                        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 3));
+                        instList.add(new NederScriptInstruction.Push(3));
                         break;
                     } else if (ctx.NUM().contains(ctx.getChild(i))) {
-
+                        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR(0))),2));
+                        int index = Integer.parseInt(ctx.getChild(i).getText());
+                        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(index),3));
+                        instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 2));
+                        instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 3));
+                        instList.add(new NederScriptInstruction.Push(3));
                         break;
                     }
                 }
