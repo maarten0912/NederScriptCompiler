@@ -37,9 +37,7 @@ forS: FOR LPAR (assign | decl) SEMI expr SEMI statement RPAR LBRACE instruction+
 assign: VAR (LBRACK expr RBRACK)* ASS expr;
 
 /** Declaration **/
-decl: (PUBLIC)? type VAR                            #nonTypedDecl
-    | (PUBLIC)? type VAR ASS expr                   #typedDecl
-    ;
+decl:  (PUBLIC)? type VAR ASS expr;
 
 /** Return statement **/
 returnS: RETURN expr;
@@ -56,7 +54,7 @@ primitive: STR                                                      #stringPrimi
          ;
 
 /** Type **/
-type: INTEGER | BOOLEAN | CHARACTER | (ARRAY LT type GT LT NUM GT) | (STRING LT NUM GT);
+type: INTEGER | BOOLEAN | CHARACTER | (ARRAY LT type GT) | (STRING);
 
 /** Expressions **/
     expr: prefixOp expr                #prefixExpr

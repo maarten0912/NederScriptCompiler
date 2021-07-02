@@ -157,49 +157,16 @@ public class NederScriptChecker extends NederScriptBaseListener {
         }
     }
 
-    @Override
-    public void exitNonTypedDecl(NederScriptParser.NonTypedDeclContext ctx) {
-        String var = ctx.VAR().getText();
-        NederScriptType type;
-        if (ctx.type().STRING() != null) {
-            int len = Integer.parseInt(ctx.type().NUM().getText());
-            type = new NederScriptType.Touw(len);
-        } else if (ctx.type().ARRAY() != null) {
-            NederScriptType elemType = typeContextToNederScriptType(ctx.type().type());
-            int len = Integer.parseInt(ctx.type().NUM().getText());
-            type = new NederScriptType.Reeks(elemType, len);
-        } else {
-            type = typeContextToNederScriptType(ctx.type());
-        }
-
-        if (ctx.PUBLIC() != null) {
-            this.globalSt.add(var, type);
-            setOffset(ctx, this.globalSt.getOffset(var));
-            setPublic(ctx, true);
-        } else {
-            this.st.add(var, type);
-            setOffset(ctx, this.st.getOffset(var));
-            setPublic(ctx, false);
-        }
-    }
 
     @Override
-    public void exitTypedDecl(NederScriptParser.TypedDeclContext ctx) {
+    public void exitDecl(NederScriptParser.DeclContext ctx) {
         String var = ctx.VAR().getText();
         NederScriptType type;
         if (ctx.type().STRING() != null) {
             int strLen = getType(ctx.expr()).size() - 1;
-            int expectedLen = Integer.parseInt(ctx.type().NUM().getText());
-            if (strLen != expectedLen) {
-                addError(ctx, "Lengths of %s do not match: expected %s but found %s", var, expectedLen, strLen);
-            }
             type = new NederScriptType.Touw(strLen);
         } else if (ctx.type().ARRAY() != null) {
             int arrLen = getType(ctx.expr()).size() - 1;
-            int expectedLen = Integer.parseInt(ctx.type().NUM().getText());
-            if (arrLen != expectedLen) {
-                addError(ctx, "Lengths of %s do not match: expected %s but found %s", var, expectedLen, arrLen);
-            }
             NederScriptType elemType = ((NederScriptType.Reeks) getType(ctx.expr())).getElemType();
             if (ctx.type().type().ARRAY() != null || ctx.type().type().STRING() != null) {
                 addError(ctx, "Nested array are currently not supported");

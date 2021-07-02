@@ -330,13 +330,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     }
 
     @Override
-    public List<NederScriptInstruction> visitNonTypedDecl(NederScriptParser.NonTypedDeclContext ctx) {
-        //TODO
-        return null;
-    }
-
-    @Override
-    public List<NederScriptInstruction> visitTypedDecl(NederScriptParser.TypedDeclContext ctx) {
+    public List<NederScriptInstruction> visitDecl(NederScriptParser.DeclContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
         instList.addAll(visit(ctx.expr()));
         NederScriptType type = this.result.getType(ctx.expr());
@@ -581,10 +575,9 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 }
                 break;
             case "lengte":
-                //TODO
-//                int size = this.result.getType(ctx.expr(0)).size() - 1;
-//                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(69),2));
-//                instList.add(new NederScriptInstruction.Push(2));
+                int size = this.result.getType(ctx.expr(0)).size() - 1;
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(size),2));
+                instList.add(new NederScriptInstruction.Push(2));
                 break;
             case "aansluiten":
                 instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptDirAddr(5)));
@@ -717,8 +710,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
 
     @Override
     public List<NederScriptInstruction> visitFunCallExpr(NederScriptParser.FunCallExprContext ctx) {
-        //TODO
-        return null;
+        return visit(ctx.funCall());
     }
 
     @Override
