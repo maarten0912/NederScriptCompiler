@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class will
+ * This class will generate the SPROCKELL code for the program
  */
 public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScriptInstruction>> {
 
@@ -36,8 +36,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     }
 
 
-
-
+    /**
+     * This method is the initialization class for the visitor
+     * @param ctx
+     * @return
+     */
     @Override
     public List<NederScriptInstruction> visitProgram(NederScriptParser.ProgramContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
