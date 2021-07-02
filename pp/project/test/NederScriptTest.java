@@ -102,7 +102,9 @@ public class NederScriptTest {
             a.add("Sprockell 0 says Hallo wereld!");
             runSucces("testprint.ns", a);
 
-            runSucces("testifelse.ns", new ArrayList<>());
+            a = new ArrayList<>();
+            a.add("Sprockell 0 says 5");
+            runSucces("testifelse.ns", a);
 
         } catch (ParseException | IOException e) {
             fail(e.getMessage());
@@ -137,13 +139,47 @@ public class NederScriptTest {
 
     @Test
     public void testPeterson() throws ParseException {
-        List <String> out = run("peterson.ns", "pp/project/test/");
-        for (String s : out) {
-            System.out.println(s);
+        List<String> a = new ArrayList<>();
+        a.add("Sprockell 1 says Critical section P0");
+        a.add("Sprockell 2 says Critical section P1");
+        a.add("Sprockell 0 says 200");
+        try {
+            runSucces("peterson.ns",a);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testBanking() throws ParseException {
+        List<String> a = new ArrayList<>();
+        a.add("Sprockell 0 says Vault is currently empty, adding cash.");
+        a.add("Sprockell 0 says Transferring begins");
+        a.add("Sprockell 0 says Transferring has ended. Total cash in vault:");
+        a.add("Sprockell 0 says 950");
+        try {
+            runSucces("banking.ns",a);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testBankingNoLocks() throws ParseException {
+        List<String> a = new ArrayList<>();
+        a.add("Sprockell 0 says Vault is currently empty, adding cash.");
+        a.add("Sprockell 0 says Transferring begins");
+        a.add("Sprockell 0 says Transferring has ended. Total cash in vault:");
+        a.add("Sprockell 0 says 950");
+        try {
+            runSucces("bankingnolocks.ns",a);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
 
+    @Test(timeout = 5000)
     public void testInfiniteLoop() {
 
         try {
@@ -159,15 +195,13 @@ public class NederScriptTest {
         System.out.println("\n" + ANSI_GREEN + "Testing file '" + filename + "' for runtime errors." + ANSI_RESET + "\n");
 
         List <String> out = run(filename, "pp/project/test/semantic/");
-            if (expected.size() > 0) {
-                if (expected.size() != out.size()) {
-                    fail ("The output did not correspond to the expected output");
-                }
-                for (int i = 0; i < expected.size(); i++) {
-                    assertEquals(expected.get(i), out.get(i));
-                }
+        if (expected.size() != out.size()) {
+            fail ("The output did not correspond to the expected output");
+        } else {
+            for (int i = 0; i < expected.size(); i++) {
+                assertEquals(expected.get(i), out.get(i));
             }
-
+        }
     }
     
 
@@ -214,7 +248,7 @@ public class NederScriptTest {
     }
 
     private List<String> run(String filename, String dir) throws ParseException {
-        return this.compiler.run(filename, dir, false, false);
+        return this.compiler.run(filename, dir, true, false);
     }
 
     private ParseTree parse(String filename) throws IOException, ParseException {

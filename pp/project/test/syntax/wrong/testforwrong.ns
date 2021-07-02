@@ -2,9 +2,12 @@ functie hoofd() {
 
     Reeks things = ["abcd","0123"];
 
-    voor (Getal i = 0; i < 2; i = i + 1) {
-        voor (Karakter c in things[i]) {
-            print(c);
+    voor (Getal i = 0; i < lengte(things); i = i + 1) {
+        Touw woord = things[i];
+        voor (Getal j = 0; j < lengte things[i]; j = j + 1){
+
+            Karakter c = woord[j];
+            afdrukken(c);
         }
     }
 }

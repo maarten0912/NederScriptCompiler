@@ -3,7 +3,7 @@ functie hoofd() {
     Reeks<Getal> reeks = [1,2,3];
 
     als (reeks[0] == 1) {
-        reeks = [1,2,3,a];
+        reeks = [1,2,a];
     }
 
     afdrukken(reeks);

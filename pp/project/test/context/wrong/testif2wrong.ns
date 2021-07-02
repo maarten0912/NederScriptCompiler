@@ -1,8 +1,0 @@
-functie hoofd() {
-    Getal a = 2;
-    Getal b = waar;
-    als (!b) {
-         a = 1;
-    }
-    afdrukken(a);
-}

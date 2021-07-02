@@ -1,0 +1,7 @@
+functie hoofd() {
+    Getal a = 1;
+
+    draad {
+        afdrukken(a);
+    }
+}

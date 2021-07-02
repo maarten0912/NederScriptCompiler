@@ -1,0 +1,8 @@
+functie hoofd() {
+    publiek Getal a = 1;
+
+    draad {
+        Getal b = 2;
+        afdrukken (a+b);
+    }
+}

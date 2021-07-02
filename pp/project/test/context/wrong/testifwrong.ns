@@ -1,11 +1,8 @@
 functie hoofd() {
     Getal a = 2;
     Getal b = waar;
-    als (b) {
+    als (!b) {
          a = 1;
-    }
-    als (a) {
-        afdrukken(b);
     }
     afdrukken(a);
 }

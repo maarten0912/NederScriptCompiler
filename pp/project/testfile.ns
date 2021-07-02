@@ -1,4 +1,8 @@
 functie hoofd() {
-    Booleaans a = onwaar;
-    afdrukken(a || (waar && (onwaar || a)));
+
+    Getal a = 1;
+    draad {
+        publiek Getal a = 1;
+    }
+    afdrukken(a);
 }
