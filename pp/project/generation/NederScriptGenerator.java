@@ -282,7 +282,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 }
 
             } else {
-
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 2));
                 instList.add(new NederScriptInstruction.Pop(3));
 
@@ -291,7 +290,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Pop(4));
 
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 2, 0, 2));
-                instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
+                if (this.result.isPublic(ctx)) {
+                    instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
+                } else {
+                    instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
+                }
 
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr, 3, 0, 3));
                 // if sLen != 0, jump
@@ -335,7 +338,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             instList.add(new NederScriptInstruction.Pop(2));
             instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
             if (result.isPublic(ctx)) {
-                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
             } else {
                 instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
             }
@@ -356,14 +359,22 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             // regC: string length + 1
             instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 2, 0, 4));
             // string length + 1 -> mem(offset)
-            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+            if (this.result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+            } else {
+                instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+            }
             // offset++
             instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 3, 0, 3));
 
             instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(5)));
             // get next character
             instList.add(new NederScriptInstruction.Pop(4));
-            instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+            if (this.result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+            } else {
+                instList.add(new NederScriptInstruction.Store(4, new NederScriptAddrImmDI.NederScriptIndAddr(3)));
+            }
 
             // offset := offset + 1
             instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Incr, 3, 0, 3));
@@ -409,7 +420,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         } else {
             instList.add(new NederScriptInstruction.Pop(2));
             if (this.result.isPublic(ctx)) {
-                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
             } else {
                 instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
             }
@@ -681,10 +692,16 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Push(3));
 
             } else {
+
                 // offset -> regA
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 2));
                 // strLen + 1 -> regB
-                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 3));
+                if (this.result.isPublic(ctx)) {
+                    instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptIndAddr(2)));
+                    instList.add(new NederScriptInstruction.Receive(3));
+                } else {
+                    instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptIndAddr(2), 3));
+                }
                 // offset + strLen -> regB
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add, 2, 3, 3));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Decr, 3, 0, 3));
@@ -780,7 +797,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             }
         } else {
             if (result.isPublic(ctx)) {
-                instList.add(new NederScriptInstruction.ReadInstr( new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+                instList.add(new NederScriptInstruction.ReadInstr( new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
                 instList.add(new NederScriptInstruction.Receive(2));
             } else {
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
