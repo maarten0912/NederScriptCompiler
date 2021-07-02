@@ -1,0 +1,39 @@
+functie hoofd() {
+
+    publiek Reeks<Booleaans> flag = [onwaar,onwaar];
+    publiek Getal turn = 0;
+    publiek Getal testvalue = 0;
+
+    draad {
+        flag[0] = waar;
+        turn = 1;
+        terwijl (flag[1] == waar && turn == 1) {
+        }
+
+        afdrukken("Critical section P0");
+        voor (Getal i = 0; i < 100; i = i + 1) {
+            testvalue = testvalue + 1;
+        }
+
+        flag[0] = onwaar;
+    }
+
+    draad {
+        flag[1] = waar;
+        turn = 0;
+        terwijl (flag[0] == waar && turn == 0) {
+        }
+
+        afdrukken("Critical section P1");
+        voor (Getal i = 0; i < 100; i = i + 1) {
+            testvalue = testvalue + 1;
+        }
+
+        flag[1] = onwaar;
+    }
+
+    aansluiten();
+
+    afdrukken(testvalue);
+
+}

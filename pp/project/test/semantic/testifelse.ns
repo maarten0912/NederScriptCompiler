@@ -1,0 +1,15 @@
+functie hoofd() {
+    Getal test = 0;
+
+    voor (Getal i = 0; i < 10; i = i + 1) {
+        test = test + i;
+    }
+
+    terwijl (test > 5) {
+        test = test - 2;
+    }
+
+    als (test == 5) {
+        afdrukken(test);
+    }
+}

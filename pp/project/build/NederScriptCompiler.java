@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -52,9 +54,19 @@ public class NederScriptCompiler {
         }
 
         try {
+            new NederScriptCompiler().run(filename, "pp/project/", true, true);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public List<String> run(String filename, String dir, Boolean show, Boolean ghc) throws ParseException {
+        List<String> lines = new ArrayList<>();
+        try {
             System.out.println("--- Compiling " + filename);
 
-            NederScriptProgram prog = instance().compile(new File("pp/project/" + filename));
+            NederScriptProgram prog = instance().compile(new File(dir + filename));
             SprockellBuilder sprockell = prog.toHaskell();
 
             System.out.println("\n--- Finished compiling " + filename);
@@ -62,99 +74,73 @@ public class NederScriptCompiler {
             filename = filename.split(".ns")[0];
             String filenamehs = filename + ".hs";
 
-            new HaskellRunner().run("pp/project/" + filenamehs, sprockell);
+            new HaskellRunner().run(dir + filenamehs, sprockell);
 
             System.out.println("\n--- Created haskell file " + filenamehs);
 
-            Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename, null, new File("pp/project/"));
 
-            System.out.println("\n--- Created executable out/" + filename + ".exe");
+            if (ghc) {
+                Process p = Runtime.getRuntime().exec("ghc " + filenamehs + " -outputdir tmp -o out/" + filename, null, new File("pp/project/"));
 
-            BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+                System.out.println("\n--- Created executable out/" + filename + ".exe");
 
-            String line;
+                BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 
-            if ((line = errors.readLine()) != null) {
-                // TODO error?
-                System.out.println("\nHaskell error:");
-                System.out.println(line);
-                while ((line = errors.readLine()) != null) {
+                String line;
+
+                if ((line = errors.readLine()) != null) {
+                    // TODO error?
+                    System.out.println("\nHaskell error:");
+                    System.out.println(line);
+                    while ((line = errors.readLine()) != null) {
+                        System.out.println(line);
+                    }
+                }
+
+                p.waitFor();
+
+                System.out.println("\n--- Running executable '" + filename + ".exe' \n");
+
+                Process execute = Runtime.getRuntime().exec("pp/project/out/" + filename + ".exe");
+
+                BufferedReader output = new BufferedReader(new InputStreamReader(execute.getInputStream()));
+
+                while ((line = output.readLine()) != null) {
                     System.out.println(line);
                 }
-            }
 
-            p.waitFor();
-
-            System.out.println("\n--- Running executable '" + filename + ".exe' \n");
-
-            Process execute = Runtime.getRuntime().exec("pp/project/out/" + filename + ".exe");
-
-            BufferedReader output = new BufferedReader(new InputStreamReader(execute.getInputStream()));
-
-            while ((line = output.readLine()) != null) {
-                System.out.println(line);
-            }
-
-        } catch (IOException exc) {
-            exc.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-
-    public List<String> run(String filename, String dir, Boolean show) throws ParseException {
-        List<String> lines = new ArrayList<>();
-        try {
-            if (show)
-                System.out.println("--- Compiling " + filename);
-
-            NederScriptProgram prog = instance().compile(new File(dir + filename));
-            SprockellBuilder sprockell = prog.toHaskell();
-
-            if (show)
-                System.out.println("\n--- Finished compiling " + filename);
-
-            filename = filename.split(".ns")[0];
-            String filenamehs = filename + ".hs";
-
-            new HaskellRunner().run(dir + filenamehs, sprockell);
-
-            if (show)
-                System.out.println("\n--- Created haskell file " + filenamehs);
-
-            if (show)
-                System.out.println("\n--- Running executable '" + filename + "'\n");
-
-            Process p = Runtime.getRuntime().exec("runhaskell " + filenamehs, null, new File(dir));
-
-
-            BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-
-            String line;
-
-            if ((line = errors.readLine()) != null && show) {
-                // TODO error?
-                System.out.println("\nHaskell error:");
-                System.out.println(line);
-                while ((line = errors.readLine()) != null) {
-                    System.out.println(line);
-                }
-            }
-
-
-            BufferedReader output = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-            while ((line = output.readLine()) != null) {
+            } else {
                 if (show)
-                    System.out.println(line);
-                lines.add(line);
+                    System.out.println("\n--- Running executable '" + filename + "'\n");
+
+                Process p = Runtime.getRuntime().exec("runhaskell " + filenamehs, null, new File(dir));
+
+                BufferedReader errors = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+                String line;
+
+                p.waitFor();
+
+                if (errors.readLine() != null) {
+                    if ((line = errors.readLine()) != null && show) {
+                        System.out.println("\nHaskell error:");
+                        System.out.println(line);
+                        while ((line = errors.readLine()) != null) {
+                            System.out.println(line);
+                        }
+                    }
+                }
+                BufferedReader output = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+                while ((line = output.readLine()) != null) {
+                    if (show)
+                        System.out.println(line);
+                    lines.add(line);
+
+                }
             }
 
-        } catch (IOException exc) {
+        } catch(IOException | InterruptedException exc){
             exc.printStackTrace();
         }
 

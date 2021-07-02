@@ -1,0 +1,23 @@
+functie hoofd() {
+
+    publiek Reeks<Getal> vector = [1,2,3,4,5,6];
+    publiek Getal res1 = 0;
+    publiek Getal res2 = 0;
+
+    draad {
+        voor (Getal i = 0; i < 3; i = i + 1) {
+            res1 = res1 + vector[i];
+        }
+    }
+
+    draad {
+        voor (Getal i = 3; i < 6; i = i + 1) {
+            res2 = res2 + vector[i];
+        }
+    }
+
+    aansluiten();
+
+    afdrukken("The sum of the vector is:");
+    afdrukken(res1 + res2);
+}
