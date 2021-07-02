@@ -48,6 +48,12 @@ public class ScopeTable {
         return stack.size();
     }
 
+    /**
+     * Adding a new variable to the outermost scope in the scope table
+     * @param id
+     * @param type
+     * @return
+     */
     public boolean add(String id, NederScriptType type) {
         return stack.peek().put(id, type);
     }
