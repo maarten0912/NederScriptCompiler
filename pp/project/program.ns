@@ -1,0 +1,50 @@
+functie hoofd() {
+
+    publiek Reeks<Getal> vector = [0,0];
+
+    publiek Getal xShift = 1;
+    publiek Getal yShift = -2;
+
+    Booleaans show = waar;
+    publiek Booleaans square = waar;
+
+    als (show) {
+        afdrukken("Calculating vector");
+        afdrukken(vector);
+        afdrukken("xShift:");
+        afdrukken(xShift);
+        afdrukken("yShift:");
+        afdrukken(yShift);
+        afdrukken("Squaring the vector:");
+        afdrukken(square);
+    }
+
+    draad {
+        vergrendel();
+        als (xShift != 0) {
+            vector[0] = vector[0] + xShift;
+        }
+        als (yShift != 0) {
+            vector[1] = vector[1] + yShift;
+        }
+        ontgrendel();
+    }
+
+    draad {
+        vergrendel();
+        als (square) {
+            voor (Getal i = 0; i < lengte(vector); i = i + 1) {
+                vector[i] = vector[i] * vector[i];
+            }
+        }
+        ontgrendel();
+    }
+
+    aansluiten();
+
+    als (show) {
+        afdrukken("Final vector:");
+        afdrukken(vector);
+    }
+
+}

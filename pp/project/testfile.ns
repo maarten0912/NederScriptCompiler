@@ -1,8 +1,11 @@
 functie hoofd() {
 
-    Getal a = 1;
+    publiek Getal a = 1;
     draad {
-        publiek Getal a = 1;
+         a = a * 2;
     }
+
+    aansluiten();
+
     afdrukken(a);
 }

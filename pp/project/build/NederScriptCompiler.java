@@ -48,7 +48,7 @@ public class NederScriptCompiler {
     public static void main(String[] args) {
         String filename;
         if (args.length != 1) {
-            filename = "testfile.ns";
+            filename = "program.ns";
         } else {
             filename = args[0];
         }
