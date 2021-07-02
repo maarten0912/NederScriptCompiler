@@ -6,12 +6,15 @@ public class ScopeTable {
     // Deque is a better version of Stack, because the iterator goes from top to bottom
     private final Deque<NederScriptScope> stack = new ArrayDeque<>();
 
-    public ScopeTable() {
+    private int stackSize;
+
+    public ScopeTable(Integer stackSize) {
+        this.stackSize = stackSize;
         openScope();
     }
 
     public void openScope() {
-        int stackSize = 0;
+
         if (stack.peek() != null) {
             stackSize = stack.peek().getSize();
 

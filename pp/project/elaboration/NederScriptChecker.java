@@ -8,7 +8,6 @@ import org.antlr.v4.runtime.tree.*;
 import pp.project.elaboration.NederScriptBaseListener;
 import pp.project.elaboration.NederScriptParser;
 import pp.project.exception.ParseException;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,10 +24,10 @@ public class NederScriptChecker extends NederScriptBaseListener {
     public NederScriptResult check(ParseTree tree) throws ParseException {
         this.result = new NederScriptResult();
         this.errors = new ArrayList<>();
-        this.st = new ScopeTable();
-        this.threadSt = new ScopeTable();
+        this.st = new ScopeTable(0);
+        this.threadSt = new ScopeTable(0);
         this.inThread = false;
-        this.publicS = new ScopeTable();
+        this.publicS = new ScopeTable(6);
 
         new NederScriptFunctionListener().check(this,tree, st, threadSt);
         new ParseTreeWalker().walk(this, tree);

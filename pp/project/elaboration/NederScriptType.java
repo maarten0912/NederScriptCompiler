@@ -83,7 +83,7 @@ abstract public class NederScriptType {
 
         @Override
         public String toString() {
-            return "Reeks<" + getElemType() + "><" + this.length + ">";
+            return "Reeks<" + getElemType() + ">";
         }
 
         @Override
@@ -123,7 +123,7 @@ abstract public class NederScriptType {
         }
 
         @Override
-        public String toString() {return "Touw<" + this.length + ">"; }
+        public String toString() {return "Touw"; }
 
         @Override
         public boolean equals(Object obj) {
