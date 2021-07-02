@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * This class will
+ */
 public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScriptInstruction>> {
 
     private List<String> errs = new ArrayList<>();
@@ -152,12 +155,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     public List<NederScriptInstruction> visitDeclStat(NederScriptParser.DeclStatContext ctx) {
         return visit(ctx.decl());
     }
-
-    @Override
-    public List<NederScriptInstruction> visitReturnStat(NederScriptParser.ReturnStatContext ctx) {
-        return visit(ctx.returnS());
-    }
-
 
     @Override
     public List<NederScriptInstruction> visitFunctionCallStat(NederScriptParser.FunctionCallStatContext ctx) {
@@ -473,12 +470,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         instList.add(new NederScriptInstruction.EndProg());
 
         return instList;
-    }
-
-    @Override
-    public List<NederScriptInstruction> visitReturnS(NederScriptParser.ReturnSContext ctx) {
-        //TODO
-        return null;
     }
 
     @Override

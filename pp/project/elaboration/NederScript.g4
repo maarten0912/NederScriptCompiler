@@ -18,7 +18,6 @@ instruction: statement SEMI                     #normalInst
 /** Statement **/
 statement: assign   #assignStat
          | decl     #declStat
-         | returnS  #returnStat
          | funCall  #functionCallStat
          ;
 
@@ -38,9 +37,6 @@ assign: VAR (LBRACK expr RBRACK)* ASS expr;
 
 /** Declaration **/
 decl:  (PUBLIC)? type VAR ASS expr;
-
-/** Return statement **/
-returnS: RETURN expr;
 
 /** Function call **/
 funCall: VAR LPAR (expr (COMMA expr)*)? RPAR;
@@ -121,7 +117,6 @@ ELSE: 'anders';
 TRUE: 'waar';
 FALSE: 'onwaar';
 FUN: 'functie';
-RETURN: 'geefterug';
 PUBLIC: 'publiek';
 THREAD: 'draad';
 

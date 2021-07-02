@@ -116,6 +116,11 @@ public class NederScriptChecker extends NederScriptBaseListener {
         }
     }
 
+    /**
+     * If the comparison operator is equals, both operands must have the same type
+     * If the comparison operator is one that checks order, both operands must be of type GETAL
+     * @param ctx
+     */
     @Override
     public void exitCompExpr(NederScriptParser.CompExprContext ctx) {
         if (ctx.compOp().EQ() != null) {
@@ -140,6 +145,10 @@ public class NederScriptChecker extends NederScriptBaseListener {
         setType(ctx, NederScriptType.BOOLEAANS);
     }
 
+    /**
+     * This will check if both operands are GETAL
+     * @param ctx
+     */
     @Override
     public void exitMultExpr(NederScriptParser.MultExprContext ctx) {
         checkType(ctx.expr(0), NederScriptType.GETAL);
@@ -147,23 +156,16 @@ public class NederScriptChecker extends NederScriptBaseListener {
         setType(ctx, NederScriptType.GETAL);
     }
 
+    /**
+     * This will check if both operands are GETAL
+     * @param ctx
+     */
     @Override
     public void exitPlusExpr(NederScriptParser.PlusExprContext ctx) {
-        NederScriptType type = getType(ctx.expr(0));
+        checkType(ctx.expr(0), NederScriptType.GETAL);
+        checkType(ctx.expr(1), NederScriptType.GETAL);
 
-        if (type instanceof NederScriptType.Touw) {
-            if (!NederScriptType.GETAL.equals(getType(ctx.expr(1)))) {
-                checkType(ctx.expr(1), new NederScriptType.Touw(0));
-            }
-            setType(ctx, getType(ctx.expr(0)));
-        } else if (type instanceof NederScriptType.Getal) {
-            if (!new NederScriptType.Touw(0).equals(getType(ctx.expr(1)))) {
-                checkType(ctx.expr(1), NederScriptType.GETAL);
-            }
-            setType(ctx, getType(ctx.expr(1)));
-        } else {
-            addError(ctx, "Found incompatible types for %s operation: %s and %s",ctx.plusOp().getText(), getType(ctx.expr(0)), getType(ctx.expr(1)));
-        }
+        setType(ctx, NederScriptType.GETAL);
     }
 
 
