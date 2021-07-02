@@ -1,6 +1,5 @@
 package pp.project.generation;
 
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import pp.project.elaboration.*;
 import pp.project.exception.ParseException;
@@ -596,11 +595,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
-    @Override
-    public List<NederScriptInstruction> visitType(NederScriptParser.TypeContext ctx) {
-        //TODO
-        return null;
-    }
 
     @Override
     public List<NederScriptInstruction> visitPlusExpr(NederScriptParser.PlusExprContext ctx) {

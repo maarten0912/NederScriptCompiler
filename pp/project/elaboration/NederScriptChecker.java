@@ -12,7 +12,6 @@ import pp.project.exception.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-//TODO: check length of string and arrays
 
 public class NederScriptChecker extends NederScriptBaseListener {
 
