@@ -11,7 +11,9 @@ import pp.project.exception.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 
-
+/**
+ * This class will check the types of the parse tree and generate offset variables
+ */
 public class NederScriptChecker extends NederScriptBaseListener {
 
     private List<String> errors;
@@ -168,7 +170,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
         setType(ctx, NederScriptType.GETAL);
     }
 
-
     @Override
     public void exitDecl(NederScriptParser.DeclContext ctx) {
         String var = ctx.VAR().getText();
@@ -263,8 +264,10 @@ public class NederScriptChecker extends NederScriptBaseListener {
         threadSt.closeScope();
     }
 
-
-
+    /**
+     * This method creates the types and offsets of variables
+     * @param ctx
+     */
     @Override
     public void exitVarExpr(NederScriptParser.VarExprContext ctx) {
         String var = ctx.VAR().getText();
@@ -318,6 +321,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
             setOffset(ctx.VAR(), curSt.getOffset(ctx.VAR().getText()));
 
         } else {
+            //this var is a normal var
             NederScriptType type = curSt.getType(ctx.VAR().getText());
             if (type == null) {
                 addError(ctx, "Variable '%s' not initialized", ctx.VAR().getText());
@@ -376,6 +380,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
             checkType(ctx.expr(ctx.expr().size() - 1),resType);
             setOffset(ctx.VAR(), curSt.getOffset(ctx.VAR().getText()));
         } else {
+            //this var is a normal var
             if (curSt.contains(var)) {
                 NederScriptType varType = curSt.getType(var);
                 checkType(ctx.expr(ctx.expr().size() - 1),varType);

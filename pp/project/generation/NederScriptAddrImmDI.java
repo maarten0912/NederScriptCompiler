@@ -1,5 +1,8 @@
 package pp.project.generation;
 
+/**
+ * This class is a Java wrapper of the Sprockell AddrImmDI data type
+ */
 abstract public class NederScriptAddrImmDI {
 
     static public class NederScriptImmValue extends NederScriptAddrImmDI {

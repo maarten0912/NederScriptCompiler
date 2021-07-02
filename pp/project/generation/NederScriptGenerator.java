@@ -56,8 +56,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                         instList.add(new NederScriptInstruction.Branch(1, new NederScriptTarget.Rel(4)));
                     }
 
-                    //TODO: not best solution, fix another way
                     //Put something in first mem address because the length in-built function is supposed to be there
+                    //Currently we just put the value 1 there
                     instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),2));
                     instList.add(new NederScriptInstruction.Store(2, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
 
@@ -92,6 +92,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     public List<NederScriptInstruction> visitFunction(NederScriptParser.FunctionContext ctx) {
         //TODO put function args on stack
         //TODO create new AR
+        //Unfortunately we could not implement these todo's
+
         this.st.openScope();
         List<NederScriptInstruction> instList = new ArrayList<>();
         for (NederScriptParser.InstructionContext i : ctx.instruction()) {
@@ -107,6 +109,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
     @Override
     public List<NederScriptInstruction> visitNormalInst(NederScriptParser.NormalInstContext ctx) {
         //TODO put function args on stack
+        //Unfortunately we could not implement this todo
 
         return visit(ctx.statement());
     }
@@ -269,6 +272,10 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             if (ctx.expr().size() > 1) {
                 //TODO nested arrays
                 //TODO index out of bounds
+                //we currently do not implement these features
+
+
+                //this code will update the value of an array when an index is supplied
                 instList.addAll(visit(ctx.expr(0)));
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
                 instList.add(new NederScriptInstruction.Pop(3));
@@ -282,6 +289,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 }
 
             } else {
+                //this code will update an array (no index is supplied)
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 2));
                 instList.add(new NederScriptInstruction.Pop(3));
 
@@ -305,6 +313,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             if (ctx.expr().size() > 1) {
                 //TODO nested arrays
 
+                //this code will update the value of a string when an index is supplied
                 instList.addAll(visit(ctx.expr(0)));
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
                 instList.add(new NederScriptInstruction.Pop(3));
@@ -317,6 +326,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.add(new NederScriptInstruction.Store(3, new NederScriptAddrImmDI.NederScriptIndAddr(2)));
                 }
             } else {
+                //this code will update a string (no index is supplied)
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)),2));
                 instList.add(new NederScriptInstruction.Pop(3));
 
@@ -335,6 +345,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-4)));
             }
         } else {
+            //assigning to a non-touw and non-reeks
             instList.add(new NederScriptInstruction.Pop(2));
             instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
             if (result.isPublic(ctx)) {
@@ -352,6 +363,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         instList.addAll(visit(ctx.expr()));
         NederScriptType type = this.result.getType(ctx.expr());
         if (type instanceof NederScriptType.Touw) {
+            //this type will put a string from the stack in the correct memory location
+
             // regA: stringlength
             instList.add(new NederScriptInstruction.Pop(2));
             // regB: offset
@@ -385,6 +398,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-4)));
         } else if (type instanceof NederScriptType.Reeks) {
             //TODO nested arrays
+
+            //this code will put an array from the stack in the correct memory location
 
             // regA: arraylength
             instList.add(new NederScriptInstruction.Pop(2));
@@ -483,6 +498,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             case "afdrukken":
                 NederScriptType type = this.result.getType(ctx.expr(0));
                 if (type instanceof NederScriptType.Touw) {
+                    //this code will pop a string from the stack and print it to the screen
+
                     List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
                     if (exprIns != null) {
                         instList.addAll(exprIns);
@@ -510,6 +527,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.addAll(createPrintString("\n"));
 
                 } else if (type instanceof NederScriptType.Reeks) {
+                    //this code will pop an array from the stack and print it to the screen
+
                     List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
                     if (exprIns != null) {
                         instList.addAll(exprIns);
@@ -533,7 +552,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.add(new NederScriptInstruction.Pop(4));
 
                     //Convert number to ascii character
-                    //TODO: this is way too hard for multiple digit, numbers
+                    //TODO: this is way too hard for multiple digit, numbers, just print it as an integer for now
                     instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
                     //Print comma
                     instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(44),6));
@@ -552,7 +571,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     //Print only the element without comma
                     instList.add(new NederScriptInstruction.Pop(4));
                     //Convert number to ascii character
-//                    instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Add,4, 7,4));
                     instList.add(new NederScriptInstruction.WriteInstr(4, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
 
                     //Print ]
@@ -562,6 +580,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.addAll(createPrintString("\n"));
 
                 } else if (type.equals(NederScriptType.GETAL)) {
+                    //print an integer
 
                     List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
                     if (exprIns != null) {
@@ -572,6 +591,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(65536)));
 
                 } else if (type.equals(NederScriptType.BOOLEAANS)) {
+                    //print a boolean
+
                     List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
                     if (exprIns != null) {
                         instList.addAll(exprIns);
@@ -588,6 +609,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                     instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(1 + 5*2)));
                     instList.addAll(createPrintString("waar\n"));
                 } else if (type.equals(NederScriptType.KARAKTER)) {
+                    //print a character
+
                     List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
                     if (exprIns != null) {
                         instList.addAll(exprIns);
@@ -608,12 +631,13 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 }
                 break;
             case "lengte":
-                //TODO fix public
+                //for getting the size of the type of an object
                 int size = this.result.getType(ctx.expr(0)).size() - 1;
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(size),2));
                 instList.add(new NederScriptInstruction.Push(2));
                 break;
             case "aansluiten":
+                //for joining threads
                 instList.add(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptDirAddr(5)));
                 instList.add(new NederScriptInstruction.Receive(2));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Equal, 2, 0, 3));
@@ -622,12 +646,14 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-5)));
                 break;
             case "vergrendel":
+                //for locking threads
                 instList.add(new NederScriptInstruction.TestAndSet(new NederScriptAddrImmDI.NederScriptDirAddr(0)));
                 instList.add(new NederScriptInstruction.Receive(2));
                 instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(2)));
                 instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-3)));
                 break;
             case "ontgrendel":
+                //for unlocking threads
                 instList.add(new NederScriptInstruction.WriteInstr(0, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
                 break;
             default:
@@ -663,6 +689,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return visit(ctx.expr());
     }
 
+    /**
+     * This method will get the value of a variable and push it on the stack
+     * @param ctx
+     * @return
+     */
     @Override
     public List<NederScriptInstruction> visitVarExpr(NederScriptParser.VarExprContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
@@ -672,6 +703,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 //This TOUW is supplied an index: a[i]
                 //TODO nested arrays
 
+                //push the value of a[i] on the stack
                 instList.addAll(visit(ctx.expr(0)));
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
                 instList.add(new NederScriptInstruction.Pop(3));
@@ -686,6 +718,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Push(3));
 
             } else {
+                //push the value of this string on the stack
 
                 // offset -> regA
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)), 2));
@@ -734,6 +767,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             if (ctx.expr().size() > 0) {
                 //TODO nested arrays
 
+                //push the value of a[i] on the stack (a is an array)
+
                 instList.addAll(visit(ctx.expr(0)));
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx.VAR())),2));
                 instList.add(new NederScriptInstruction.Pop(3));
@@ -748,6 +783,8 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Push(3));
 
             } else {
+                //push the value of a on the stack
+
                 // offset -> regA
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(this.result.getOffset(ctx)),2));
                 // strLen + 1 -> regB
@@ -928,6 +965,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return newInst;
     }
 
+    /**
+     * This method will push a string on the stack
+     * @param ctx
+     * @return
+     */
     @Override
     public List<NederScriptInstruction> visitStringPrimitive(NederScriptParser.StringPrimitiveContext ctx) {
         String s = ctx.getText().split("\"",3)[1];
@@ -944,6 +986,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
+    /**
+     * This method will push a character on the stack
+     * @param ctx
+     * @return
+     */
     @Override
     public List<NederScriptInstruction> visitCharacterPrimitive(NederScriptParser.CharacterPrimitiveContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
@@ -953,6 +1000,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
+    /**
+     * This method will push an array on the stack
+     * @param ctx
+     * @return
+     */
     @Override
     public List<NederScriptInstruction> visitArrayPrimitive(NederScriptParser.ArrayPrimitiveContext ctx) {
         //TODO nested array
@@ -981,6 +1033,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
+    /**
+     * This method will push an integer on the stack
+     * @param ctx
+     * @return
+     */
     @Override
     public List<NederScriptInstruction> visitIntegerPrimitive(NederScriptParser.IntegerPrimitiveContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
@@ -989,6 +1046,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
+    /**
+     * This method will push a boolean on the stack
+     * @param ctx
+     * @return
+     */
     @Override
     public List<NederScriptInstruction> visitBooleanPrimitive(NederScriptParser.BooleanPrimitiveContext ctx) {
         List<NederScriptInstruction> instList = new ArrayList<>();
@@ -1048,6 +1110,10 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         return instList;
     }
 
+    /**
+     * This method was a test method to create the given sample program that calculates the fibonacci numbers up to a given number
+     * Currently not used
+     */
     public void makeFibonacci() {
         prog.addInstruction(new NederScriptInstruction.Debug("Beginning program!!!"));
         prog.addInstruction(new NederScriptInstruction.ReadInstr(new NederScriptAddrImmDI.NederScriptDirAddr(65536)));

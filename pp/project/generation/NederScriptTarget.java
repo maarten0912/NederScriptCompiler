@@ -1,5 +1,8 @@
 package pp.project.generation;
 
+/**
+ * This class is a Java wrapper of the Sprockell Target data type
+ */
 abstract public class NederScriptTarget {
 
     static public class Abs extends NederScriptTarget{

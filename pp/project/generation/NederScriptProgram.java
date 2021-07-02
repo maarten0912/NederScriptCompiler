@@ -31,6 +31,9 @@ import java.util.List;
  * charIO   = DirAddr charIOaddr
  */
 
+/**
+ * This class is a java wrapper for the sprockell program
+ */
 public class NederScriptProgram {
     private List<NederScriptInstruction> instList;
     private Integer threadNumber;
@@ -51,6 +54,10 @@ public class NederScriptProgram {
         return builder;
     }
 
+    /**
+     * This method will add a sprockell instruction to the program wrapper
+     * @param inst
+     */
     public void addInstruction(NederScriptInstruction inst) {
         this.instList.add(inst);
     }

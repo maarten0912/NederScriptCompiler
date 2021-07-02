@@ -58,6 +58,11 @@ public class ScopeTable {
         return stack.peek().put(id, type);
     }
 
+    /**
+     * Check if any of the scopes in the table contains the supplied variable
+     * @param id
+     * @return
+     */
     public boolean contains(String id) {
         for (NederScriptScope s : stack) {
             if (s.contains(id)) return true;
@@ -65,6 +70,12 @@ public class ScopeTable {
         return false;
     }
 
+    /**
+     * Get the type of the variable supplied in the scope that is the highest level
+     * If the variable doesn't exist, return null
+     * @param id
+     * @return
+     */
     public NederScriptType getType(String id) {
         for (NederScriptScope s : stack) {
             if (s.contains(id)) {
@@ -74,6 +85,12 @@ public class ScopeTable {
         return null;
     }
 
+    /**
+     * Get the offset of the variable supplied in the scope that is the highest leve l
+     * If the variable doesn't exist, return null
+     * @param id
+     * @return
+     */
     public Integer getOffset(String id) {
         for (NederScriptScope s : stack) {
             if (s.contains(id)) {

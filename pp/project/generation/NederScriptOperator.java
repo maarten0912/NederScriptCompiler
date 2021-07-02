@@ -1,5 +1,8 @@
 package pp.project.generation;
 
+/**
+ * This class is a Java wrapper of the Sprockell Operator datatype
+ */
 public enum NederScriptOperator {
     Add,
     Sub,

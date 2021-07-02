@@ -2,6 +2,9 @@ package pp.project.generation;
 
 import pp.project.elaboration.NederScriptTypeKind;
 
+/**
+ * This class is a Java wrapper of the Sprockell instructions
+ */
 abstract public class NederScriptInstruction {
 
     /** Kind of a type. */
