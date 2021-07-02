@@ -1,0 +1,38 @@
+functie hoofd() {
+
+    publiek Reeks<Booleaans> flag = [onwaar,onwaar];
+    publiek Getal turn;
+
+    draad {
+        vergrendel();
+        flag[0] = waar;
+        turn = 1;
+        ontgrendel();
+        terwijl (flag[1] == waar && turn == 1) {
+            1 = 1;
+        }
+
+        vergrendel();
+        afdrukken("Critical section P0");
+
+        flag[0] = onwaar;
+        ontgrendel();
+    }
+
+    draad {
+        vergrendel();
+        flag[1] = waar;
+        turn = 0;
+        ontgrendel();
+        terwijl (flag[0] == waar && turn == 0) {
+            1 = 1;
+        }
+
+        vergrendel();
+        afdrukken("Critical section P1");
+
+        flag[1] = onwaar;
+        ontgrendel();
+    }
+
+}

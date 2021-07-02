@@ -1,10 +1,6 @@
 functie hoofd() {
-    Reeks<Getal> a = [1,2,3,4,5];
-    voor(Getal i = 0; i < lengte(a); i = i + 1) {
-        afdrukken(a[i]);
-        a[i] = 69;
-    }
-    afdrukken(a);
+
+
 }
 
 

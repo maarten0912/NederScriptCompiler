@@ -1,5 +1,6 @@
 package pp.project.generation;
 
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import pp.project.elaboration.*;
 import pp.project.exception.ParseException;
@@ -324,6 +325,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         } else {
             instList.add(new NederScriptInstruction.Pop(2));
             instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            if (result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+            } else {
+                instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            }
         }
         return instList;
     }
@@ -385,7 +391,11 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
             instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(-4)));
         } else {
             instList.add(new NederScriptInstruction.Pop(2));
-            instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            if (this.result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.WriteInstr(2, new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+            } else {
+                instList.add(new NederScriptInstruction.Store(2,new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx))));
+            }
         }
         return instList;
     }
@@ -449,7 +459,6 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
         String functionName = ctx.VAR().getText();
         switch (functionName) {
             case "afdrukken":
-
                 NederScriptType type = this.result.getType(ctx.expr(0));
                 if (type instanceof NederScriptType.Touw) {
                     List<NederScriptInstruction> exprIns = visit(ctx.expr(0));
@@ -574,6 +583,7 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 }
                 break;
             case "lengte":
+                //TODO fix public
                 int size = this.result.getType(ctx.expr(0)).size() - 1;
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(size),2));
                 instList.add(new NederScriptInstruction.Push(2));
@@ -585,6 +595,15 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptImmValue(1),4));
                 instList.add(new NederScriptInstruction.Compute(NederScriptOperator.Sub, 4, 3, 3));
                 instList.add(new NederScriptInstruction.Branch(3, new NederScriptTarget.Rel(-5)));
+                break;
+            case "vergrendel":
+                instList.add(new NederScriptInstruction.TestAndSet(new NederScriptAddrImmDI.NederScriptDirAddr(0)));
+                instList.add(new NederScriptInstruction.Receive(2));
+                instList.add(new NederScriptInstruction.Branch(2, new NederScriptTarget.Rel(2)));
+                instList.add(new NederScriptInstruction.Jump(new NederScriptTarget.Rel(-3)));
+                break;
+            case "ontgrendel":
+                instList.add(new NederScriptInstruction.WriteInstr(0, new NederScriptAddrImmDI.NederScriptDirAddr(0)));
                 break;
             default:
                 //TODO
@@ -696,7 +715,12 @@ public class NederScriptGenerator extends NederScriptBaseVisitor<List<NederScrip
                 instList.add(new NederScriptInstruction.Push(5));
             }
         } else {
-            instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
+            if (result.isPublic(ctx)) {
+                instList.add(new NederScriptInstruction.ReadInstr( new NederScriptAddrImmDI.NederScriptDirAddr(6 + this.result.getOffset(ctx))));
+                instList.add(new NederScriptInstruction.Receive(2));
+            } else {
+                instList.add(new NederScriptInstruction.Load(new NederScriptAddrImmDI.NederScriptDirAddr(this.result.getOffset(ctx)),2));
+            }
             instList.add(new NederScriptInstruction.Push(2));
         }
         return instList;

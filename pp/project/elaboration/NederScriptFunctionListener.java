@@ -9,12 +9,19 @@ public class NederScriptFunctionListener extends NederScriptBaseListener {
     private NederScriptChecker checker;
     private ScopeTable st;
 
-    public void check(NederScriptChecker checker, ParseTree tree, ScopeTable st) {
+    public void check(NederScriptChecker checker, ParseTree tree, ScopeTable st, ScopeTable globalSt) {
         this.st = st;
         this.checker = checker;
         this.st.add("afdrukken", NederScriptType.LEEGTE);
         this.st.add("lengte", NederScriptType.GETAL);
         this.st.add("aansluiten",NederScriptType.LEEGTE);
+        this.st.add("vergrendel",NederScriptType.LEEGTE);
+        this.st.add("ontgrendel",NederScriptType.LEEGTE);
+        globalSt.add("afdrukken", NederScriptType.LEEGTE);
+        globalSt.add("lengte", NederScriptType.GETAL);
+        globalSt.add("aansluiten",NederScriptType.LEEGTE);
+        globalSt.add("vergrendel",NederScriptType.LEEGTE);
+        globalSt.add("ontgrendel",NederScriptType.LEEGTE);
         new ParseTreeWalker().walk(this, tree);
     }
 

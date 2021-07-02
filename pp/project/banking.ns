@@ -1,0 +1,35 @@
+functie hoofd() {
+
+    publiek Getal vault = 0;
+
+    afdrukken("Vault is currently empty, adding cash.");
+
+    vault = vault + 1000;
+
+    afdrukken("Transferring begins");
+
+    draad {
+        vergrendel();
+        vault = vault + 100;
+        ontgrendel();
+    }
+    draad {
+        voor (Getal i = 0; i < 100; i = i + 1) {
+            vergrendel();
+            vault = vault + 20;
+            ontgrendel();
+        }
+    }
+    draad {
+        vergrendel();
+        vault = vault - 50;
+        ontgrendel();
+    }
+
+    aansluiten();
+
+    afdrukken("Transferring has ended. Total cash in vault:");
+
+    afdrukken(vault);
+
+}
