@@ -286,11 +286,15 @@ public class NederScriptChecker extends NederScriptBaseListener {
 
             NederScriptType resType = this.st.getType(ctx.VAR().getText());
             setType(ctx.VAR(), resType);
-            setType(ctx, resType);
 
             for (int i = 0; i < ctx.expr().size(); i++) {
                 NederScriptType type = getType(ctx.expr(i));
-                setOffset(ctx.expr(i),getOffset(ctx.expr(i)));
+                try {
+                    setOffset(ctx.expr(i),getOffset(ctx.expr(i)));
+
+                } catch (NullPointerException e) {
+                    //this means that a[i] where i is just a constant
+                }
                 if (!type.equals(NederScriptType.GETAL)) {
                     addError(ctx.expr(i), "Expected type 'Getal' but was '%s'",type);
                     return;
@@ -303,6 +307,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
                     addError(ctx, "Expected type 'Reeks' but was '%s'",resType);
                 }
             }
+            setType(ctx, resType);
+
 
             setOffset(ctx, this.st.getOffset(ctx.VAR().getText()));
             setOffset(ctx.VAR(), this.st.getOffset(ctx.VAR().getText()));
@@ -317,9 +323,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
             int off = this.st.getOffset(ctx.VAR().getText());
             setOffset(ctx, off);
         }
-
-        System.out.println(String.format("[exitVarExpr] Found variable %s of type %s with offset %s", ctx.VAR().getText(),this.result.getType(ctx.VAR()),this.result.getOffset(ctx)));
-
 
     }
 
@@ -359,9 +362,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
             setOffset(ctx, this.st.getOffset(ctx.VAR().getText()));
             setType(ctx, getType(ctx.expr(ctx.expr().size() - 1)));
         }
-
-        System.out.println(String.format("[exitAssign] Found variable %s of type %s", ctx.VAR().getText(),this.result.getType(ctx)));
-
 
     }
 
@@ -500,7 +500,6 @@ public class NederScriptChecker extends NederScriptBaseListener {
             return;
         }
         if (!actual.equals(expected)) {
-            System.out.println(node.getText());
             addError(node, "Expected type '%s' but found '%s'", expected,
                     actual);
         }
