@@ -4,7 +4,8 @@ functie hoofd() {
 
     Booleaans c = a && b;
 
-    Booleaans d;
+    Booleaans d = onwaar;
+
     als (c || b) {
         d = waar;
     } anders {

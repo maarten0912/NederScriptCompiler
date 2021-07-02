@@ -4,7 +4,7 @@ functie hoofd() {
 
     als (reeks[0] == a) {
         a = a + 1;
-        reeks = [1,2,3,a];
+        reeks = [1,2,a];
     }
 
     afdrukken(reeks);

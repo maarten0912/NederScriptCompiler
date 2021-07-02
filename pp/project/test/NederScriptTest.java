@@ -99,39 +99,75 @@ public class NederScriptTest {
     public void testSemantics() {
         try {
             List<String> a = new ArrayList<>();
-            a.add("Hallo wereld!");
+            a.add("Sprockell 0 says Hallo wereld!");
             runSucces("testprint.ns", a);
-        } catch (IOException e) {
+
+            runSucces("testifelse.ns", new ArrayList<>());
+
+        } catch (ParseException | IOException e) {
             fail(e.getMessage());
         }
     }
 
-    @Test(timeout = 1000)
+    @Test
+    public void testMultiThread() throws ParseException {
+        List<String> a = new ArrayList<>();
+        a.add("Sprockell 0 says This will print first");
+        a.add("Sprockell 1 says This will print second");
+        a.add("Sprockell 2 says This will print third");
+        a.add("Sprockell 0 says This will print 4th");
+        a.add("Sprockell 3 says This will print 5th");
+        try {
+            runSucces("testthread.ns",a);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    @Test
+    public void testMultiThread2() throws ParseException {
+        List<String> a = new ArrayList<>();
+        a.add("Sprockell 0 says The sum of the vector is:");
+        a.add("Sprockell 0 says 21");
+        try {
+            runSucces("vectorsum.ns",a);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testPeterson() throws ParseException {
+        List <String> out = run("peterson.ns", "pp/project/test/");
+        for (String s : out) {
+            System.out.println(s);
+        }
+    }
+
+
     public void testInfiniteLoop() {
+
         try {
             runSucces("testinfinite.ns", null);
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             fail(e.getMessage());
         }
     }
 
     
-    private void runSucces(String filename, List<String> expected) throws IOException {
-        try {
-            System.out.println("\n" + ANSI_GREEN + "Testing file '" + filename + "' for runtime errors." + ANSI_RESET + "\n");
+    private void runSucces(String filename, List<String> expected) throws IOException, ParseException {
 
-            List <String> out = run(filename, "pp/project/test/semantic/");
+        System.out.println("\n" + ANSI_GREEN + "Testing file '" + filename + "' for runtime errors." + ANSI_RESET + "\n");
 
+        List <String> out = run(filename, "pp/project/test/semantic/");
             if (expected.size() > 0) {
+                if (expected.size() != out.size()) {
+                    fail ("The output did not correspond to the expected output");
+                }
                 for (int i = 0; i < expected.size(); i++) {
                     assertEquals(expected.get(i), out.get(i));
                 }
             }
 
-        } catch (ParseException exc) {
-            exc.print();
-            fail (filename + " could not compile.");
-        }
     }
     
 
@@ -178,7 +214,7 @@ public class NederScriptTest {
     }
 
     private List<String> run(String filename, String dir) throws ParseException {
-        return this.compiler.run(filename, dir, false);
+        return this.compiler.run(filename, dir, false, false);
     }
 
     private ParseTree parse(String filename) throws IOException, ParseException {

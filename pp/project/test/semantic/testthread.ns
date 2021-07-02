@@ -1,0 +1,24 @@
+functie hoofd() {
+
+    afdrukken("This will print first");
+
+    draad {
+        vergrendel();
+        afdrukken("This will print second");
+        ontgrendel();
+    }
+    draad {
+        vergrendel();
+        afdrukken("This will print third");
+        ontgrendel();
+    }
+    aansluiten();
+
+    afdrukken ("This will print 4th");
+
+    draad {
+        vergrendel();
+        afdrukken("This will print 5th");
+        ontgrendel();
+    }
+}

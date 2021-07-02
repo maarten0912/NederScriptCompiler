@@ -22,15 +22,15 @@ statement: assign   #assignStat
          ;
 
 /** If Else **/
-ifelse: IF LPAR expr RPAR LBRACE instruction+ RBRACE (ELSE LBRACE instruction+ RBRACE)?;
+ifelse: IF LPAR expr RPAR LBRACE instruction* RBRACE (ELSE LBRACE instruction* RBRACE)?;
 
 /** While loops **/
-whileS: WHILE LPAR expr RPAR LBRACE instruction+ RBRACE;
+whileS: WHILE LPAR expr RPAR LBRACE instruction* RBRACE;
 
-thread: THREAD LBRACE instruction+ RBRACE;
+thread: THREAD LBRACE instruction* RBRACE;
 
 /** For loops **/
-forS: FOR LPAR (assign | decl) SEMI expr SEMI statement RPAR LBRACE instruction+ RBRACE;
+forS: FOR LPAR (assign | decl) SEMI expr SEMI statement RPAR LBRACE instruction* RBRACE;
 
 /** Assignment **/
 assign: VAR (LBRACK expr RBRACK)* ASS expr;
