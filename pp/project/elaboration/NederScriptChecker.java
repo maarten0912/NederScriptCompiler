@@ -426,6 +426,7 @@ public class NederScriptChecker extends NederScriptBaseListener {
             }
         }
 
+        //Check if all elements in array have the same type
         for (int i = 0; i < ctx.primitive().size(); i++) {
             NederScriptType curType = getType(ctx.primitive(i));
             elemNumber++;
@@ -434,6 +435,8 @@ public class NederScriptChecker extends NederScriptBaseListener {
                 addError(ctx,"Not all elements in Reeks have the same type. Expected type '%s' while type was '%s'", type, curType);
             }
         }
+
+        //get the type of the elements
         for (int i = 0; i < ctx.VAR().size(); i++) {
             elemNumber++;
             String var = ctx.VAR(i).getText();
