@@ -1,4 +1,10 @@
 
+# NederScript Compiler
+
+## Why?
+This is a compiler for a made up language called NederScript. It is based on Java, but most keywords are translated (sometimes literally) into Dutch. This was a project for the course Programming Paradigms for the Bachelor Technical Computer Science at the University of Twente. This project was done with one partner
+
+## Running the compiler
 To run our compiler, you need to run the main function of pp/project/build/NederScriptCompiler.java (from an IDE).
 
     -You can choose to supply no program arguments, then the compiler will compile the file pp/project/testfile.ns
